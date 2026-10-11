@@ -1,0 +1,88 @@
+name: Coleta semanal
+
+on:
+  schedule:
+    # Segunda-feira, 08h de Brasília (o cron do GitHub é em UTC: 11h).
+    - cron: "0 11 * * 1"
+  workflow_dispatch:
+    inputs:
+      coletor:
+        description: Coletor a executar
+        type: choice
+        default: todos
+        options:
+          - todos
+          - app_store
+          - google_play
+          - reclame_aqui
+          - consumidor_gov
+          - instagram
+
+concurrency:
+  group: coleta
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  # No agendamento não há input; vale "todos".
+  COLETOR: ${{ inputs.coletor || 'todos' }}
+
+jobs:
+  coleta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Instalar dependências
+        run: uv sync --frozen --no-dev
+
+      - name: Migrações
+        run: uv run alembic upgrade head
+
+      - name: Sincronizar configuração
+        run: uv run monitor sync-config
+
+      # Cada coletor é um passo separado com continue-on-error, para que a falha
+      # de um não bloqueie os demais. Descomente conforme forem implementados.
+
+      # - name: App Store
+      #   if: env.COLETOR == 'todos' || env.COLETOR == 'app_store'
+      #   continue-on-error: true
+      #   run: uv run monitor coletar app_store
+
+      # - name: Google Play
+      #   if: env.COLETOR == 'todos' || env.COLETOR == 'google_play'
+      #   continue-on-error: true
+      #   run: uv run monitor coletar google_play
+
+      # - name: Reclame Aqui
+      #   if: env.COLETOR == 'todos' || env.COLETOR == 'reclame_aqui'
+      #   continue-on-error: true
+      #   run: uv run monitor coletar reclame_aqui
+
+      # - name: Consumidor.gov.br
+      #   if: env.COLETOR == 'todos' || env.COLETOR == 'consumidor_gov'
+      #   continue-on-error: true
+      #   run: uv run monitor coletar consumidor_gov
+
+      # - name: Instagram
+      #   if: env.COLETOR == 'todos' || env.COLETOR == 'instagram'
+      #   continue-on-error: true
+      #   env:
+      #     INSTAGRAM_TOKEN: ${{ secrets.INSTAGRAM_TOKEN }}
+      #   run: uv run monitor coletar instagram
+
+      - name: Limpar respostas brutas antigas
+        run: uv run monitor limpar-brutos --dias 180
+
+      - name: Resumo das execuções
+        if: always()
+        run: uv run monitor status

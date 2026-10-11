@@ -1,0 +1,25 @@
+# Segredos
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+
+# Dados baixados pelos coletores
+dados/
+*.csv
+*.zip
+
+# Editor / SO
+.vscode/
+.idea/
+Thumbs.db
+.claude/settings.local.json

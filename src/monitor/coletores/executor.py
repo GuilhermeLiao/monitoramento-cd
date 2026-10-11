@@ -40,6 +40,11 @@ def executar_coletor(coletor: Coletor, fabrica: sessionmaker[Session]) -> Result
     if not perfis:
         log.warning("nenhum perfil ativo para a plataforma", extra=contexto)
 
+    try:
+        coletor.preparar(perfis)
+    except Exception:  # noqa: BLE001 - preparar é otimização; cada perfil ainda é tentado
+        log.exception("falha ao preparar a coleta", extra=contexto)
+
     ok = 0
     erros: list[dict[str, Any]] = []
     for perfil in perfis:

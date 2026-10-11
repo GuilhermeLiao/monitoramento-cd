@@ -52,6 +52,10 @@ class Coletor(ABC):
     nome: ClassVar[str]
     plataforma: ClassVar[str]
 
+    def preparar(self, perfis: list[PerfilAlvo]) -> None:  # noqa: B027 - opcional
+        """Chamado uma vez antes dos perfis, para fontes que aceitam consulta em
+        lote. É só otimização: se falhar, a coleta segue perfil a perfil."""
+
     @abstractmethod
     def coletar(self, perfil: PerfilAlvo) -> ResultadoColeta:
         """Busca os dados de um perfil. Não acessa o banco. Qualquer exceção é

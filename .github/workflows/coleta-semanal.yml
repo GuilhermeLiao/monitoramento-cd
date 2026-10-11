@@ -12,6 +12,7 @@ on:
         default: todos
         options:
           - todos
+          - lojas
           - app_store
           - google_play
           - reclame_aqui
@@ -53,15 +54,15 @@ jobs:
       # Cada coletor é um passo separado com continue-on-error, para que a falha
       # de um não bloqueie os demais. Descomente conforme forem implementados.
 
-      # - name: App Store
-      #   if: env.COLETOR == 'todos' || env.COLETOR == 'app_store'
-      #   continue-on-error: true
-      #   run: uv run monitor coletar app_store
+      - name: App Store
+        if: env.COLETOR == 'todos' || env.COLETOR == 'lojas' || env.COLETOR == 'app_store'
+        continue-on-error: true
+        run: uv run monitor coletar app_store
 
-      # - name: Google Play
-      #   if: env.COLETOR == 'todos' || env.COLETOR == 'google_play'
-      #   continue-on-error: true
-      #   run: uv run monitor coletar google_play
+      - name: Google Play
+        if: env.COLETOR == 'todos' || env.COLETOR == 'lojas' || env.COLETOR == 'google_play'
+        continue-on-error: true
+        run: uv run monitor coletar google_play
 
       # - name: Reclame Aqui
       #   if: env.COLETOR == 'todos' || env.COLETOR == 'reclame_aqui'

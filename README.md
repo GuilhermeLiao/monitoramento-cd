@@ -6,8 +6,8 @@ PostgreSQL no Neon, com views prontas para Looker Studio, Metabase ou Power BI.
 
 Nenhum dado pessoal de consumidor é armazenado: só métricas e atributos categóricos.
 
-> Estado atual: fundação pronta (banco, configuração, CLI, executor, workflow).
-> Os coletores ainda não foram implementados.
+> Estado atual: coletores das lojas de apps (`app_store` e `google_play`) prontos,
+> gravando a nota média de cada app. Os demais ainda não foram implementados.
 
 ## 1. Criar o banco no Neon
 
@@ -66,10 +66,23 @@ Edite `config/instituicoes.yaml` para cadastrar as instituições e seus perfis
 (o arquivo traz um exemplo comentado) e rode `sync-config` de novo. O comando é
 idempotente; o que sair do YAML fica inativo no banco, nunca é apagado.
 
+### Identificadores dos apps
+
+Abra a página do app na loja do Brasil e copie o identificador da URL:
+
+| Plataforma    | Identificador                 | Exemplo de URL                                                   |
+|---------------|-------------------------------|------------------------------------------------------------------|
+| `app_store`   | o número depois de `id`       | `https://apps.apple.com/br/app/nome-do-app/id`**`123456789`**    |
+| `google_play` | o valor do parâmetro `id=`    | `https://play.google.com/store/apps/details?id=`**`com.exemplo.app`** |
+
+Cada app é um perfil; use `rotulo` para distinguir os apps da mesma instituição
+(por exemplo, "App PF" e "App PJ").
+
 ## 4. Comandos
 
 ```powershell
-uv run monitor coletar <coletor>       # roda um coletor
+uv run monitor coletar <coletor>       # roda um coletor (app_store, google_play)
+uv run monitor coletar lojas           # roda app_store e google_play
 uv run monitor coletar todos           # roda todos
 uv run monitor sync-config             # sincroniza o YAML com o banco
 uv run monitor limpar-brutos --dias 180  # apaga respostas brutas antigas
@@ -77,8 +90,15 @@ uv run monitor status                  # últimas execuções e falhas por perfi
 uv run monitor --help
 ```
 
-`coletar` sai com código 1 quando um coletor falha em todos os perfis. Os logs
-saem em JSON (uma linha por evento) no stderr.
+`coletar` lista os perfis que falharam e o motivo, e sai com código 1 quando um
+coletor falha em todos os perfis. Os logs saem em JSON (uma linha por evento) no
+stderr.
+
+Os coletores das lojas gravam só a nota média (`nota_media`) de cada app, sem
+arredondar. Se a loja não devolver uma nota válida (app removido, sem avaliações
+ou resposta fora do esperado), o perfil fica com erro e nada é gravado para ele.
+No Google Play, vários perfis com "nota ausente" de uma vez indicam que a
+biblioteca `google-play-scraper` deixou de entender a página da loja.
 
 Migrações:
 
@@ -92,6 +112,7 @@ uv run alembic revision -m "descricao"   # nova migração (escrita à mão)
 
 ```powershell
 uv run pytest
+uv run pytest -m live    # opcional: consulta um app real em cada loja, pela rede
 ```
 
 Os testes de banco criam um schema temporário (`teste_xxxx`) no banco do `.env`,
@@ -139,7 +160,7 @@ src/monitor/
     config_loader.py         validação do YAML
     cli.py                   comandos `monitor ...`
     db/                      modelos, sessão e repositórios
-    coletores/               interface base, executor e (futuramente) os coletores
+    coletores/               interface base, executor e os coletores
 migrations/                  Alembic
 sql/views/                   views para BI
 tests/

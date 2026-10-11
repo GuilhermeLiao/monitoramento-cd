@@ -5,7 +5,7 @@ from typing import Annotated
 import typer
 from pydantic import ValidationError
 
-from monitor.coletores import COLETORES
+from monitor.coletores import COLETORES, GRUPOS
 from monitor.coletores.executor import executar_coletor
 from monitor.config_loader import ConfigInvalida, carregar_config
 from monitor.db import repositorios as repo
@@ -28,7 +28,7 @@ def _principal() -> None:
 
 @app.command()
 def coletar(
-    coletor: Annotated[str, typer.Argument(help="Nome do coletor ou 'todos'.")],
+    coletor: Annotated[str, typer.Argument(help="Nome do coletor, 'lojas' ou 'todos'.")],
 ) -> None:
     """Executa um coletor (ou todos). Sai com código 1 se algum falhar em todos os perfis."""
     if coletor == "todos":
@@ -36,11 +36,14 @@ def coletar(
         if not nomes:
             typer.echo("Nenhum coletor implementado ainda.")
             return
+    elif coletor in GRUPOS:
+        nomes = list(GRUPOS[coletor])
     elif coletor in COLETORES:
         nomes = [coletor]
     else:
         typer.echo(
-            f"Coletor desconhecido: {coletor}. Disponíveis: {sorted(COLETORES) or 'nenhum'}",
+            f"Coletor desconhecido: {coletor}. "
+            f"Disponíveis: {sorted([*COLETORES, *GRUPOS]) or 'nenhum'}",
             err=True,
         )
         raise typer.Exit(2)
@@ -59,6 +62,8 @@ def coletar(
             f"{nome}: {resultado.status} "
             f"({resultado.perfis_ok} ok, {resultado.perfis_erro} com erro)"
         )
+        for erro in resultado.erros:
+            typer.echo(f"      {erro['identificador']}: {erro['tipo']}: {erro['mensagem']}")
         falhou = falhou or resultado.falhou_tudo
     if falhou:
         raise typer.Exit(1)

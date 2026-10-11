@@ -9,15 +9,19 @@ Metabase ou Power BI) direto no banco.
 
 | Coletor / plataforma | Como coleta | O que coleta |
 |---|---|---|
-| `app_store` | iTunes Lookup API | nota média, quantidade de avaliações |
-| `google_play` | biblioteca google-play-scraper | nota média, quantidade de avaliações |
+| `app_store` | iTunes Lookup API (em lote) | nota média |
+| `google_play` | biblioteca google-play-scraper, isolada em `adaptador_google_play.py` | nota média |
 | `reclame_aqui` | indicadores por empresa | total de reclamações, % respondidas, % resolvidas, nota do consumidor, voltaria a fazer negócio, tempo de resposta, status de reputação; opcionalmente reclamações individuais |
 | `consumidor_gov` | arquivos mensais de dados abertos | reclamações individuais das instituições monitoradas e métricas por período |
 | `instagram` | Graph API Business Discovery | seguidores, posts do período, curtidas por post (quando visíveis) |
 
 Futuro: outras redes sociais (só seguidores) e ranking de reclamações do Banco Central.
 
-Estado: a fundação está pronta; **nenhum coletor foi implementado ainda**.
+Estado: `app_store` e `google_play` implementados (`monitor coletar lojas` roda os
+dois); os demais coletores ainda não.
+
+Das lojas só se grava `nota_media`, por decisão do dono do projeto: a quantidade
+de avaliações é lida apenas para validar a nota e fica no payload bruto.
 
 ## Restrições inegociáveis
 
@@ -127,7 +131,10 @@ Catálogo atual: `nota_media`, `total_avaliacoes`, `seguidores`, `posts_periodo`
 4. Levante exceção quando o perfil falhar: o executor (`coletores/executor.py`)
    isola o erro, grava cada perfil em sua própria transação e registra tudo em
    `execucoes`.
-5. Descomente o passo do coletor em `.github/workflows/coleta-semanal.yml` e
+5. Fonte com consulta em lote? Sobrescreva `preparar(perfis)`, chamado uma vez
+   antes dos perfis; `coletar` continua funcionando sem ele. Retentativas usam
+   `coletores/tentativas.py` (levante `ErroTransitorio` para repetir).
+6. Descomente o passo do coletor em `.github/workflows/coleta-semanal.yml` e
    documente os segredos novos no README e no `.env.example`.
 
 ## Configuração de instituições

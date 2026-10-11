@@ -10,8 +10,9 @@
 # - Plataformas disponíveis: app_store, google_play, reclame_aqui, consumidor_gov, instagram.
 #
 # identificador por plataforma:
-#   app_store      ID numérico do app (o número depois de "id" na URL da loja)
+#   app_store      ID numérico do app (o número depois de "id" na URL da loja do Brasil)
 #   google_play    nome do pacote (parâmetro id= da URL da loja)
+#   Cada app é um perfil: use rotulo para distinguir (App PF, App PJ, Cartão).
 #   reclame_aqui   slug da empresa na URL do Reclame Aqui
 #   consumidor_gov nome da empresa exatamente como aparece nos dados abertos
 #   instagram      username, sem @
@@ -34,3 +35,407 @@
 #       - {identificador: "Banco Exemplo"}
 #     instagram:
 #       - {identificador: "bancoexemplo"}
+#
+# consumidor_gov ainda não está cadastrado: o identificador é o nome da empresa
+# nos dados abertos, a conferir quando o coletor for escrito.
+
+- nome: Agibank
+  nome_curto: agibank
+  perfis:
+    app_store:
+      - {identificador: "1173498435"}
+    google_play:
+      - {identificador: "br.com.agipag.app"}
+    reclame_aqui:
+      - {identificador: "agibank"}
+    instagram:
+      - {identificador: "agibank"}
+
+- nome: Banco do Brasil
+  nome_curto: banco_do_brasil
+  perfis:
+    app_store:
+      - {identificador: "330984271"}
+    google_play:
+      - {identificador: "br.com.bb.android"}
+    reclame_aqui:
+      - {identificador: "banco-do-brasil"}
+    instagram:
+      - {identificador: "bancodobrasil"}
+
+- nome: Banco PAN
+  nome_curto: banco_pan
+  perfis:
+    app_store:
+      - {identificador: "1410400504"}
+    google_play:
+      - {identificador: "br.com.bancopan.cartoes"}
+    reclame_aqui:
+      - {identificador: "banco-pan"}
+    instagram:
+      - {identificador: "bancopan"}
+
+- nome: Banco BMG
+  nome_curto: bmg
+  perfis:
+    app_store:
+      - {identificador: "1396096726"}
+    google_play:
+      - {identificador: "br.com.bancobmg.bancodigital"}
+    reclame_aqui:
+      - {identificador: "banco-bmg"}
+    instagram:
+      - {identificador: "bancobmg"}
+
+- nome: Bradesco
+  nome_curto: bradesco
+  perfis:
+    app_store:
+      - {identificador: "336954985"}
+    google_play:
+      - {identificador: "com.bradesco"}
+    reclame_aqui:
+      - {identificador: "bradesco"}
+    instagram:
+      - {identificador: "bradesco"}
+
+- nome: BRB
+  nome_curto: brb
+  perfis:
+    app_store:
+      - {identificador: "1005747186"}
+    google_play:
+      - {identificador: "la.foton.brb.myphone"}
+    reclame_aqui:
+      - {identificador: "brb-banco-de-brasilia"}
+    instagram:
+      - {identificador: "bancobrb"}
+
+- nome: BTG Pactual
+  nome_curto: btg
+  perfis:
+    app_store:
+      - {identificador: "1467956990", rotulo: "BTG Banking"}
+      - {identificador: "1041958375", rotulo: "BTG Investimento"}
+    google_play:
+      - {identificador: "com.btg.pactual.banking", rotulo: "BTG Banking"}
+      - {identificador: "com.btg.pactual.digital.mobile", rotulo: "BTG Investimento"}
+    reclame_aqui:
+      - {identificador: "btg-mais"}
+    instagram:
+      - {identificador: "btgpactual"}
+
+- nome: Banco BV
+  nome_curto: bv
+  perfis:
+    app_store:
+      - {identificador: "1494202346"}
+    google_play:
+      - {identificador: "com.votorantim.bvpd"}
+    reclame_aqui:
+      - {identificador: "bv-financeira"}
+    instagram:
+      - {identificador: "bancobv"}
+
+- nome: C6 Bank
+  nome_curto: c6
+  perfis:
+    app_store:
+      - {identificador: "1463463143"}
+    google_play:
+      - {identificador: "com.c6bank.app"}
+    reclame_aqui:
+      - {identificador: "c6-bank"}
+    instagram:
+      - {identificador: "c6bank"}
+
+- nome: Caixa
+  nome_curto: caixa
+  perfis:
+    app_store:
+      - {identificador: "490813624"}
+    google_play:
+      - {identificador: "br.com.gabba.Caixa"}
+    reclame_aqui:
+      - {identificador: "caixa-economica-federal"}
+    instagram:
+      - {identificador: "caixa"}
+
+- nome: Carrefour (cartões)
+  nome_curto: carrefour
+  perfis:
+    app_store:
+      - {identificador: "1156553924", rotulo: "Cartão Carrefour"}
+      - {identificador: "1170586071", rotulo: "Cartão Atacadão"}
+    google_play:
+      - {identificador: "br.com.carrefour.cartaocarrefour", rotulo: "Cartão Carrefour"}
+      - {identificador: "br.com.carrefour.cartaoatacadao", rotulo: "Cartão Atacadão"}
+    reclame_aqui:
+      - {identificador: "carrefour-cartao-de-credito"}
+    instagram:
+      - {identificador: "cartao.carrefour"}
+
+- nome: Casas Bahia Pay (banQi)
+  nome_curto: casas_bahia_pay
+  perfis:
+    app_store:
+      - {identificador: "1457893925"}
+    google_play:
+      - {identificador: "com.mgensuite.airfox.recharge"}
+    reclame_aqui:
+      - {identificador: "banqi"}
+    instagram:
+      - {identificador: "casasbahiapay"}
+
+- nome: Digio
+  nome_curto: digio
+  perfis:
+    app_store:
+      - {identificador: "1128793569"}
+    google_play:
+      - {identificador: "br.com.digio"}
+    reclame_aqui:
+      - {identificador: "digio"}
+    instagram:
+      - {identificador: "meudigio"}
+
+- nome: Inter
+  nome_curto: inter
+  perfis:
+    app_store:
+      - {identificador: "839711154"}
+    google_play:
+      - {identificador: "br.com.intermedium"}
+    reclame_aqui:
+      - {identificador: "inter"}
+    instagram:
+      - {identificador: "interbr"}
+
+- nome: Itaú
+  nome_curto: itau
+  perfis:
+    app_store:
+      - {identificador: "474505665"}
+    google_play:
+      - {identificador: "com.itau"}
+    reclame_aqui:
+      - {identificador: "itau"}
+    instagram:
+      - {identificador: "itau"}
+
+- nome: KMV (Ipiranga)
+  nome_curto: kmv
+  perfis:
+    app_store:
+      - {identificador: "1052059383"}
+    google_play:
+      - {identificador: "com.gigigo.ipirangaconectcar"}
+    reclame_aqui:
+      - {identificador: "ipiranga-postos"}
+    instagram:
+      - {identificador: "ipiranga"}
+
+- nome: Magalu
+  nome_curto: magalu
+  perfis:
+    app_store:
+      - {identificador: "1394613972", rotulo: "Cartão Luiza"}
+    google_play:
+      - {identificador: "com.cartaoluiza.app", rotulo: "Cartão Luiza"}
+    instagram:
+      - {identificador: "magazineluiza"}
+
+- nome: Mercado Pago
+  nome_curto: mercado_pago
+  perfis:
+    app_store:
+      - {identificador: "925436649"}
+    google_play:
+      - {identificador: "com.mercadopago.wallet"}
+    reclame_aqui:
+      - {identificador: "mercado-pago"}
+    instagram:
+      - {identificador: "mercadopagobr"}
+
+- nome: Midway
+  nome_curto: midway
+  perfis:
+    app_store:
+      - {identificador: "1548732480"}
+    google_play:
+      - {identificador: "br.com.midway"}
+    reclame_aqui:
+      - {identificador: "midway-digital"}
+
+- nome: Neon
+  nome_curto: neon
+  perfis:
+    app_store:
+      - {identificador: "1127996388"}
+    google_play:
+      - {identificador: "br.com.neon"}
+    reclame_aqui:
+      - {identificador: "banco-neon"}
+    instagram:
+      - {identificador: "timeneon"}
+
+- nome: Next
+  nome_curto: next
+  perfis:
+    app_store:
+      - {identificador: "1133682678"}
+    google_play:
+      - {identificador: "br.com.bradesco.next"}
+    reclame_aqui:
+      - {identificador: "next-me"}
+    instagram:
+      - {identificador: "instadonext"}
+
+- nome: Nubank
+  nome_curto: nubank
+  perfis:
+    app_store:
+      - {identificador: "814456780"}
+    google_play:
+      - {identificador: "com.nu.production"}
+    reclame_aqui:
+      - {identificador: "nubank"}
+    instagram:
+      - {identificador: "nubank"}
+
+- nome: PagBank
+  nome_curto: pagbank
+  perfis:
+    app_store:
+      - {identificador: "1186059012"}
+    google_play:
+      - {identificador: "br.com.uol.ps.myaccount"}
+    reclame_aqui:
+      - {identificador: "pagseguro"}
+    instagram:
+      - {identificador: "pagbank"}
+
+- nome: Pernambucanas
+  nome_curto: pernambucanas
+  perfis:
+    app_store:
+      - {identificador: "6755051040", rotulo: "Cartão Pernambucanas"}
+    google_play:
+      # Link do documento: é o app da loja ("Pernambucanas"), não um app só do cartão.
+      - {identificador: "br.com.pernambucanas.varejo.android", rotulo: "Pernambucanas"}
+    reclame_aqui:
+      - {identificador: "pernambucanas"}
+    instagram:
+      - {identificador: "pernambucanas"}
+
+- nome: PicPay
+  nome_curto: picpay
+  perfis:
+    app_store:
+      - {identificador: "561524792"}
+    google_play:
+      - {identificador: "com.picpay"}
+    reclame_aqui:
+      - {identificador: "picpay"}
+    instagram:
+      - {identificador: "picpay"}
+
+- nome: Porto
+  nome_curto: porto
+  perfis:
+    app_store:
+      - {identificador: "1511026277"}
+    google_play:
+      - {identificador: "br.com.portoseguro.experienciacliente.mundoporto"}
+    reclame_aqui:
+      - {identificador: "portoseg-s-a-credito-financiamento-e-investimento"}
+    instagram:
+      - {identificador: "porto"}
+
+- nome: Revolut
+  nome_curto: revolut
+  perfis:
+    app_store:
+      - {identificador: "932493382"}
+    google_play:
+      - {identificador: "com.revolut.revolut"}
+    reclame_aqui:
+      - {identificador: "revolut"}
+    instagram:
+      - {identificador: "revolut"}
+
+- nome: Rico
+  nome_curto: rico
+  perfis:
+    app_store:
+      - {identificador: "1134089574"}
+    google_play:
+      - {identificador: "br.com.rico.mobile"}
+    reclame_aqui:
+      - {identificador: "rico-corretora-de-investimentos"}
+    instagram:
+      - {identificador: "ricocomvc"}
+
+- nome: Santander
+  nome_curto: santander
+  perfis:
+    app_store:
+      - {identificador: "613365711"}
+    google_play:
+      - {identificador: "com.santander.app"}
+    reclame_aqui:
+      - {identificador: "santander"}
+    instagram:
+      - {identificador: "santanderbrasil"}
+
+- nome: Sicoob
+  nome_curto: sicoob
+  perfis:
+    app_store:
+      - {identificador: "416696406"}
+    google_play:
+      - {identificador: "br.com.sicoobnet"}
+    reclame_aqui:
+      - {identificador: "sicoob"}
+    instagram:
+      - {identificador: "sicoob"}
+
+- nome: Sicredi
+  nome_curto: sicredi
+  perfis:
+    app_store:
+      - {identificador: "1041468908", rotulo: "Sicredi"}
+      - {identificador: "1481471046", rotulo: "Sicredi X"}
+    google_play:
+      - {identificador: "br.com.sicredimobi.smart", rotulo: "Sicredi"}
+      - {identificador: "br.com.sicredi.app", rotulo: "Sicredi X"}
+    reclame_aqui:
+      - {identificador: "sicredi"}
+    instagram:
+      - {identificador: "sicredi"}
+
+- nome: Unicred
+  nome_curto: unicred
+  perfis:
+    app_store:
+      - {identificador: "955807456", rotulo: "Unicred Conta"}
+      - {identificador: "1520393411", rotulo: "Unicred Visa"}
+    google_play:
+      - {identificador: "br.com.unicredmobile", rotulo: "Unicred Conta"}
+      - {identificador: "br.com.unicredvisa", rotulo: "Unicred Visa"}
+    reclame_aqui:
+      - {identificador: "unicred"}
+    instagram:
+      - {identificador: "unicred"}
+
+- nome: XP Investimentos
+  nome_curto: xp
+  perfis:
+    app_store:
+      - {identificador: "1300713021"}
+    google_play:
+      - {identificador: "br.com.xp.carteira"}
+    reclame_aqui:
+      - {identificador: "xp-investimentos"}
+    instagram:
+      - {identificador: "xpinvestimentos"}

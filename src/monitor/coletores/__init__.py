@@ -7,6 +7,8 @@ e importe-o no final deste arquivo.
 from monitor.coletores.base import Coletor
 
 COLETORES: dict[str, type[Coletor]] = {}
+# Atalhos da CLI para rodar vários coletores de uma vez (`monitor coletar lojas`).
+GRUPOS: dict[str, tuple[str, ...]] = {"lojas": ("app_store", "google_play")}
 
 
 def registrar(classe: type[Coletor]) -> type[Coletor]:
@@ -16,5 +18,6 @@ def registrar(classe: type[Coletor]) -> type[Coletor]:
     return classe
 
 
-# Imports dos coletores (um por linha), por exemplo:
-# from monitor.coletores import app_store  # noqa: E402,F401
+# Imports dos coletores (um por linha).
+from monitor.coletores import app_store  # noqa: E402,F401
+from monitor.coletores import google_play  # noqa: E402,F401

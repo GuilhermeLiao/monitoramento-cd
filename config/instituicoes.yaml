@@ -1,0 +1,36 @@
+# Instituições monitoradas e seus perfis por plataforma.
+# Depois de editar, rode:  uv run monitor sync-config
+#
+# Regras:
+# - nome_curto identifica a instituição no banco (minúsculas, números e _). Não o renomeie:
+#   um nome_curto novo cria outra instituição.
+# - cnpj e segmento são opcionais.
+# - Uma instituição pode ter vários perfis na mesma plataforma (use rotulo para distinguir).
+# - Perfis ou instituições removidos daqui são marcados como inativos, nunca apagados.
+# - Plataformas disponíveis: app_store, google_play, reclame_aqui, consumidor_gov, instagram.
+#
+# identificador por plataforma:
+#   app_store      ID numérico do app (o número depois de "id" na URL da loja)
+#   google_play    nome do pacote (parâmetro id= da URL da loja)
+#   reclame_aqui   slug da empresa na URL do Reclame Aqui
+#   consumidor_gov nome da empresa exatamente como aparece nos dados abertos
+#   instagram      username, sem @
+#
+# Exemplo (descomente e ajuste):
+#
+# - nome: Banco Exemplo
+#   nome_curto: exemplo
+#   cnpj: "00.000.000/0001-00"
+#   segmento: banco_digital
+#   perfis:
+#     app_store:
+#       - {identificador: "123456789", rotulo: "App PF"}
+#       - {identificador: "987654321", rotulo: "App PJ"}
+#     google_play:
+#       - {identificador: "com.exemplo.app", rotulo: "App PF"}
+#     reclame_aqui:
+#       - {identificador: "banco-exemplo"}
+#     consumidor_gov:
+#       - {identificador: "Banco Exemplo"}
+#     instagram:
+#       - {identificador: "bancoexemplo"}

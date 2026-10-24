@@ -21,8 +21,8 @@ def _dados_da_pagina(html: str) -> dict:
 
 
 def test_texto_do_banco_nao_fecha_a_tag_script():
-    dados = {"instituicoes": [[1, "Banco </script><script>alert(1)</script>", "x"]],
-             "perfis": [], "metricas": [], "atuais": [], "historico": [], "posts": [],
+    dados = {"instituicoes": [[1, "Banco </script><script>alert(1)</script>", "x", None]],
+             "perfis": [], "metricas": [], "historico": [], "posts": [],
              "execucoes": [], "gerado_em": "hoje"}
     html = gerar_html(dados, "teste")
     assert "</script><script>alert(1)" not in html
@@ -42,7 +42,7 @@ def test_carrega_do_banco_sem_escrever(fabrica, engine):
     dados = carregar_dados(engine)
 
     assert [i[1] for i in dados["instituicoes"]] == ["Banco Exemplo"]
-    assert [(a[1], a[2]) for a in dados["atuais"]] == [("nota_media", 4.5)]
+    assert [(h[1], h[3]) for h in dados["historico"]] == [("nota_media", 4.5)]
     assert dados["execucoes"][0][:2] == ["app_store", "sucesso"]
     assert _dados_da_pagina(gerar_html(dados, "teste"))["origem"] == "teste"
     # A transação de leitura não deixa a conexão do pool em modo só leitura.
@@ -50,8 +50,22 @@ def test_carrega_do_banco_sem_escrever(fabrica, engine):
         assert conexao.execute(text("SHOW transaction_read_only")).scalar() == "off"
 
 
-@pytest.mark.parametrize("campo", ["perfis", "atuais", "historico", "posts"])
+def test_execucao_abandonada_vira_interrompida(fabrica):
+    with fabrica.begin() as sessao:
+        antiga = repo.abrir_execucao(sessao, "instagram")
+        recente = repo.abrir_execucao(sessao, "instagram")
+        sessao.execute(text("UPDATE execucoes SET iniciado_em = now() - interval '5 hours' WHERE id = :id"),
+                       {"id": antiga})
+    with fabrica.begin() as sessao:
+        repo.abrir_execucao(sessao, "instagram")
+        status = dict(sessao.execute(text("SELECT id, status FROM execucoes")).all())
+        marca = sessao.execute(text("SELECT detalhes FROM execucoes WHERE id = :id"), {"id": antiga}).scalar()
+    assert status[antiga] == "erro" and marca["interrompida"] is True
+    assert status[recente] == "em_andamento"
+
+
+@pytest.mark.parametrize("campo", ["perfis", "historico", "posts"])
 def test_pagina_aceita_listas_vazias(campo):
-    dados = {"instituicoes": [], "perfis": [], "metricas": [], "atuais": [], "historico": [],
+    dados = {"instituicoes": [], "perfis": [], "metricas": [], "historico": [],
              "posts": [], "execucoes": [], "gerado_em": "hoje"}
     assert _dados_da_pagina(gerar_html(dados, "x"))[campo] == []

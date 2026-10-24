@@ -7,149 +7,222 @@
 <style>
 :root {
   color-scheme: light;
-  --plano: #f9f9f7;
-  --superficie: #fcfcfb;
-  --tinta: #0b0b0b;
-  --tinta-2: #52514e;
-  --tinta-3: #898781;
-  --grade: #e1e0d9;
-  --eixo: #c3c2b7;
-  --borda: rgba(11, 11, 11, 0.10);
+  --plano: #f3f4f7;
+  --superficie: #ffffff;
+  --superficie-2: #f7f8fa;
+  --tinta: #1d2433;
+  --tinta-2: #5b6475;
+  --tinta-3: #8a93a3;
+  --grade: #eceef2;
+  --trilho: #eef1f5;
+  --eixo: #d5d9e0;
+  --borda: rgba(16, 24, 40, 0.07);
+  --sombra: 0 1px 2px rgba(16, 24, 40, 0.04), 0 6px 24px rgba(16, 24, 40, 0.05);
   --serie-1: #2a78d6;
   --serie-2: #eb6834;
   --serie-3: #1baf7a;
-  --apagado: #d9d8d2;
+  --apagado: #d6dae1;
+  --lavagem: rgba(42, 120, 214, 0.07);
+  --lavagem-forte: rgba(42, 120, 214, 0.12);
   --bom: #0ca30c;
   --atencao: #fab219;
   --critico: #d03b3b;
-  --lavagem: rgba(42, 120, 214, 0.08);
+  --sobe: #0a7d0a;
+  --desce: #c13030;
 }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --plano: #0d0d0d;
-    --superficie: #1a1a19;
-    --tinta: #f0efec;
-    --tinta-2: #c3c2b7;
-    --tinta-3: #898781;
-    --grade: #2c2c2a;
-    --eixo: #383835;
-    --borda: rgba(255, 255, 255, 0.10);
+    --plano: #111317;
+    --superficie: #1a1d23;
+    --superficie-2: #20242b;
+    --tinta: #e8eaee;
+    --tinta-2: #aab1bd;
+    --tinta-3: #7c8493;
+    --grade: #262a31;
+    --trilho: #252930;
+    --eixo: #353a43;
+    --borda: rgba(255, 255, 255, 0.07);
+    --sombra: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 24px rgba(0, 0, 0, 0.25);
     --serie-1: #3987e5;
     --serie-2: #d95926;
     --serie-3: #199e70;
-    --apagado: #3a3a37;
-    --lavagem: rgba(57, 135, 229, 0.14);
+    --apagado: #3a3f48;
+    --lavagem: rgba(57, 135, 229, 0.10);
+    --lavagem-forte: rgba(57, 135, 229, 0.18);
+    --sobe: #0ca30c;
+    --desce: #e66767;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --plano: #0d0d0d;
-  --superficie: #1a1a19;
-  --tinta: #f0efec;
-  --tinta-2: #c3c2b7;
-  --tinta-3: #898781;
-  --grade: #2c2c2a;
-  --eixo: #383835;
-  --borda: rgba(255, 255, 255, 0.10);
+  --plano: #111317;
+  --superficie: #1a1d23;
+  --superficie-2: #20242b;
+  --tinta: #e8eaee;
+  --tinta-2: #aab1bd;
+  --tinta-3: #7c8493;
+  --grade: #262a31;
+  --trilho: #252930;
+  --eixo: #353a43;
+  --borda: rgba(255, 255, 255, 0.07);
+  --sombra: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 24px rgba(0, 0, 0, 0.25);
   --serie-1: #3987e5;
   --serie-2: #d95926;
   --serie-3: #199e70;
-  --apagado: #3a3a37;
-  --lavagem: rgba(57, 135, 229, 0.14);
+  --apagado: #3a3f48;
+  --lavagem: rgba(57, 135, 229, 0.10);
+  --lavagem-forte: rgba(57, 135, 229, 0.18);
+  --sobe: #0ca30c;
+  --desce: #e66767;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--plano); color: var(--tinta);
-       font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-header { padding: 24px 16px 0; max-width: 1200px; margin: 0 auto; }
-h1 { font-size: 22px; margin: 0; }
-.meta { color: var(--tinta-2); margin: 4px 0 16px; }
-.filtros { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; padding: 12px 0;
-           border-bottom: 1px solid var(--grade); }
-label.campo { display: flex; gap: 8px; align-items: center; color: var(--tinta-2); }
-select, button { font: inherit; color: var(--tinta); background: var(--superficie);
-                 border: 1px solid var(--borda); border-radius: 6px; padding: 5px 8px; }
+       font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+.topo { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--plano) 88%, transparent);
+        backdrop-filter: blur(10px); border-bottom: 1px solid var(--borda); }
+.topo-dentro { max-width: 1240px; margin: 0 auto; padding: 14px 16px 10px; }
+.linha-titulo { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; justify-content: space-between; }
+h1 { font-size: 20px; margin: 0; letter-spacing: -0.01em; }
+.meta { color: var(--tinta-3); font-size: 12px; }
+.filtros { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-top: 12px; }
+.campo { display: grid; gap: 3px; }
+.campo > span { color: var(--tinta-3); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+select, button, input[type="search"] {
+  font: inherit; color: var(--tinta); background: var(--superficie); border: 1px solid var(--borda);
+  border-radius: 9px; padding: 6px 10px; box-shadow: 0 1px 1px rgba(16,24,40,.03); }
+select { padding-right: 28px; }
 button { cursor: pointer; }
 button:hover, select:hover { border-color: var(--eixo); }
 :focus-visible { outline: 2px solid var(--serie-1); outline-offset: 2px; }
-nav { display: flex; gap: 4px; overflow-x: auto; padding: 12px 0 0; }
-nav button { border: none; background: none; color: var(--tinta-2); padding: 8px 12px; border-radius: 6px 6px 0 0;
-             border-bottom: 2px solid transparent; white-space: nowrap; }
-nav button[aria-selected="true"] { color: var(--tinta); border-bottom-color: var(--serie-1); font-weight: 600; }
-main { max-width: 1200px; margin: 0 auto; padding: 16px; }
+.botao-icone { width: 34px; height: 34px; padding: 0; display: grid; place-items: center; }
+.abas { display: flex; gap: 4px; margin-top: 12px; overflow-x: auto; padding-bottom: 2px; }
+.abas button { border: none; box-shadow: none; background: transparent; color: var(--tinta-2); border-radius: 999px;
+               padding: 6px 14px; white-space: nowrap; }
+.abas button:hover { background: var(--superficie); }
+.abas button[aria-selected="true"] { background: var(--superficie); color: var(--tinta); font-weight: 600;
+                                     box-shadow: var(--sombra); }
+main { max-width: 1240px; margin: 0 auto; padding: 20px 16px 48px; }
 section[hidden] { display: none; }
-.cartao { background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; padding: 16px;
-          margin-bottom: 16px; }
-.cartao-topo { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between;
-               margin-bottom: 12px; }
-h2 { font-size: 16px; margin: 0; }
-.nota { color: var(--tinta-3); font-size: 12px; margin: 8px 0 0; }
+.grade-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 16px; }
+.cartao { background: var(--superficie); border: 1px solid var(--borda); border-radius: 16px; padding: 18px 20px;
+          margin-bottom: 16px; box-shadow: var(--sombra); min-width: 0; }
+.grade-2 > .cartao { margin-bottom: 0; }
+.cartao-topo { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-start; justify-content: space-between;
+               margin-bottom: 14px; }
+h2 { font-size: 15px; margin: 0; letter-spacing: -0.005em; }
+.sub { color: var(--tinta-3); font-size: 12px; margin-top: 2px; }
+.janela { display: inline-flex; gap: 6px; align-items: center; background: var(--superficie-2); color: var(--tinta-2);
+          border-radius: 999px; padding: 2px 10px; font-size: 12px; margin-top: 6px; }
 .controles { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.ladrilhos { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
-.ladrilho { background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; padding: 12px 14px; }
-.ladrilho .rotulo { color: var(--tinta-2); font-size: 13px; }
-.ladrilho .valor { font-size: 20px; font-weight: 600; margin: 2px 0; }
-.ladrilho .detalhe { color: var(--tinta-3); font-size: 12px; }
-.status { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--tinta-2); }
-.status i { width: 16px; height: 16px; border-radius: 50%; display: inline-grid; place-items: center;
-            font-style: normal; font-size: 11px; font-weight: 700; color: #fff; }
+.nota { color: var(--tinta-3); font-size: 12px; margin: 12px 0 0; }
+/* Popover de instituições */
+details.multi { position: relative; }
+details.multi summary { list-style: none; cursor: pointer; background: var(--superficie); border: 1px solid var(--borda);
+                        border-radius: 9px; padding: 6px 30px 6px 10px; min-width: 190px; position: relative; }
+details.multi summary::-webkit-details-marker { display: none; }
+details.multi summary::after { content: "▾"; position: absolute; right: 10px; color: var(--tinta-3); }
+details.multi .painel-multi { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; width: 280px;
+  background: var(--superficie); border: 1px solid var(--borda); border-radius: 12px; box-shadow: var(--sombra); padding: 10px; }
+.painel-multi input[type="search"] { width: 100%; margin-bottom: 8px; }
+.painel-multi .acoes { display: flex; gap: 6px; margin-bottom: 6px; }
+.painel-multi .acoes button { padding: 3px 8px; font-size: 12px; }
+.painel-multi .lista { max-height: 300px; overflow: auto; display: grid; gap: 2px; }
+.painel-multi label { display: flex; gap: 8px; align-items: center; padding: 4px 6px; border-radius: 6px; cursor: pointer; }
+.painel-multi label:hover { background: var(--lavagem); }
+/* KPIs */
+.kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.kpi { background: var(--superficie); border: 1px solid var(--borda); border-radius: 14px; padding: 14px 16px; box-shadow: var(--sombra); }
+.kpi .rotulo { color: var(--tinta-2); font-size: 12px; }
+.kpi .valor { font-size: 24px; font-weight: 650; margin: 4px 0 2px; letter-spacing: -0.02em; }
+.kpi .detalhe { color: var(--tinta-3); font-size: 12px; }
+.delta { font-size: 12px; font-weight: 600; margin-left: 6px; }
+.delta.sobe { color: var(--sobe); } .delta.desce { color: var(--desce); } .delta.igual { color: var(--tinta-3); }
+.coletas { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.coleta { background: var(--superficie-2); border-radius: 12px; padding: 10px 12px; }
+.coleta .rotulo { color: var(--tinta-2); font-size: 12px; }
+.coleta .data { font-weight: 600; margin: 2px 0; }
+.status { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--tinta-2); }
+.status i { width: 15px; height: 15px; border-radius: 50%; display: inline-grid; place-items: center;
+            font-style: normal; font-size: 10px; font-weight: 700; color: #fff; }
 .status .bom { background: var(--bom); }
 .status .atencao { background: var(--atencao); color: #0b0b0b; }
 .status .critico { background: var(--critico); }
 .status .nenhum { background: var(--tinta-3); }
-/* Barras horizontais */
-.barras { display: grid; gap: 2px; }
-.barra { display: grid; grid-template-columns: minmax(120px, 230px) 1fr; gap: 12px; align-items: center;
-         min-height: 24px; border-radius: 4px; padding: 0 4px; }
-.barra:hover, .barra:focus-visible { background: var(--lavagem); }
-.barra .nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--tinta-2); text-align: right; }
-.barra .trilho { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.barra .marca { height: 14px; border-radius: 0 4px 4px 0; background: var(--serie-1); min-width: 2px; flex: none; }
-.barra.apagada .marca { background: var(--apagado); }
-.barra.destaque .nome { color: var(--tinta); font-weight: 600; }
-.barra .numero { color: var(--tinta); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.barra .numero.vazio { color: var(--tinta-3); }
+/* Linhas de gráfico (barras, pontos, halteres) */
+.eixo-topo { display: grid; grid-template-columns: var(--col-nome) 1fr var(--col-valor); gap: 12px; height: 18px;
+             margin-bottom: 2px; }
+.eixo-topo .escala { position: relative; }
+.eixo-topo .escala span { position: absolute; transform: translateX(-50%); color: var(--tinta-3); font-size: 11px;
+                          font-variant-numeric: tabular-nums; }
+.linhas { display: grid; gap: 2px; --col-nome: minmax(110px, 210px); --col-valor: 86px; }
+.linha { display: grid; grid-template-columns: var(--col-nome) 1fr var(--col-valor); gap: 12px; align-items: center;
+         min-height: 26px; border-radius: 8px; padding: 0 6px; }
+.linha:hover, .linha:focus-visible { background: var(--lavagem); }
+.linha .nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--tinta-2); text-align: right; }
+.linha .area { position: relative; height: 22px; }
+.linha .trilho { position: absolute; left: 0; right: 0; top: 50%; height: 10px; transform: translateY(-50%);
+                 background: var(--trilho); border-radius: 5px; }
+.linha .barra { position: absolute; left: 0; top: 50%; height: 10px; transform: translateY(-50%);
+                background: var(--serie-1); border-radius: 0 5px 5px 0; min-width: 3px; }
+.linha .guia { position: absolute; top: 50%; height: 1px; background: var(--eixo); left: 0; right: 0; }
+.linha .grade-v { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--grade); }
+.linha .ponto { position: absolute; top: 50%; width: 12px; height: 12px; border-radius: 50%; transform: translate(-50%, -50%);
+                background: var(--serie-1); box-shadow: 0 0 0 2px var(--superficie); }
+.linha .ponto.s2 { background: var(--serie-2); }
+.linha .haste { position: absolute; top: 50%; height: 2px; transform: translateY(-50%); background: var(--eixo); }
+.linha .valor { color: var(--tinta); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.linha .valor.vazio { color: var(--tinta-3); }
+.linha .chip { font-size: 11px; color: var(--tinta-2); background: var(--superficie-2); border-radius: 999px; padding: 1px 8px; margin-left: 6px; }
+.linhas.com-destaque .linha:not(.destaque) .barra,
+.linhas.com-destaque .linha:not(.destaque) .ponto { background: var(--apagado); }
+.linha.destaque { background: var(--lavagem-forte); }
+.linha.destaque .nome { color: var(--tinta); font-weight: 600; }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 10px; color: var(--tinta-2); font-size: 13px; }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.legenda i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.legenda i.traco { width: 14px; height: 3px; border-radius: 2px; }
 /* Tabelas */
 .rolagem { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
-th, td { padding: 6px 10px; border-bottom: 1px solid var(--grade); text-align: right; white-space: nowrap; }
+th, td { padding: 8px 10px; border-bottom: 1px solid var(--grade); text-align: right; white-space: nowrap; }
 th:first-child, td:first-child { text-align: left; }
 th { color: var(--tinta-2); font-weight: 600; font-size: 12px; vertical-align: bottom; }
-th button { border: none; background: none; padding: 0; color: inherit; font-weight: inherit; text-align: inherit; }
+th button { border: none; background: none; box-shadow: none; padding: 0; color: inherit; font-weight: inherit; text-align: inherit; }
 th[aria-sort] button::after { content: " ↕"; color: var(--tinta-3); }
 th[aria-sort="ascending"] button::after { content: " ↑"; color: var(--tinta); }
 th[aria-sort="descending"] button::after { content: " ↓"; color: var(--tinta); }
-tr.destaque td { background: var(--lavagem); font-weight: 600; }
+tbody tr:hover td { background: var(--lavagem); }
+tr.destaque td { background: var(--lavagem-forte); font-weight: 600; }
 td.vazio { color: var(--tinta-3); }
-.grupo { color: var(--tinta-3); font-weight: 400; display: block; font-size: 11px; }
+.grupo { color: var(--tinta-3); font-weight: 500; display: block; font-size: 11px; }
 a { color: var(--serie-1); }
-/* Linhas */
-.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 8px; color: var(--tinta-2); }
-.legenda span { display: inline-flex; align-items: center; gap: 6px; }
-.legenda i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+/* SVG */
 svg text { fill: var(--tinta-3); font-size: 11px; font-family: inherit; }
 svg .rotulo-linha { fill: var(--tinta); font-size: 12px; }
-.vazio-grafico { color: var(--tinta-3); padding: 24px 0; text-align: center; }
-#dica { position: fixed; pointer-events: none; z-index: 10; background: var(--superficie); color: var(--tinta);
-        border: 1px solid var(--borda); border-radius: 8px; padding: 8px 10px; box-shadow: 0 6px 18px rgba(0,0,0,.15);
-        font-size: 13px; max-width: 280px; display: none; }
-#dica .t { font-weight: 600; margin-bottom: 2px; }
-#dica .l { display: flex; justify-content: space-between; gap: 12px; color: var(--tinta-2); }
+.vazio-grafico { color: var(--tinta-3); padding: 28px 0; text-align: center; }
+#dica { position: fixed; pointer-events: none; z-index: 30; background: var(--superficie); color: var(--tinta);
+        border: 1px solid var(--borda); border-radius: 10px; padding: 9px 11px; box-shadow: var(--sombra);
+        font-size: 13px; max-width: 300px; display: none; }
+#dica .t { font-weight: 600; margin-bottom: 3px; }
+#dica .l { display: flex; justify-content: space-between; gap: 14px; color: var(--tinta-2); }
 #dica .l b { color: var(--tinta); font-weight: 600; font-variant-numeric: tabular-nums; }
 @media (max-width: 640px) {
-  .barra { grid-template-columns: minmax(90px, 40%) 1fr; }
+  .linhas { --col-nome: minmax(80px, 34%); --col-valor: 70px; }
+  .campo { flex: 1 1 140px; }
+  details.multi summary { min-width: 0; }
 }
 </style>
 </head>
 <body>
-<header>
-  <h1>Monitor de reputação</h1>
-  <p class="meta" id="meta"></p>
-  <div class="filtros">
-    <label class="campo">Destacar instituição <select id="destaque"><option value="">Nenhuma</option></select></label>
+<div class="topo"><div class="topo-dentro">
+  <div class="linha-titulo">
+    <h1>Monitor de reputação</h1>
+    <span class="meta" id="meta"></span>
   </div>
-  <nav role="tablist" id="abas"></nav>
-</header>
+  <div class="filtros" id="filtros"></div>
+  <div class="abas" role="tablist" id="abas"></div>
+</div></div>
 <main id="conteudo"></main>
 <div id="dica" role="tooltip"></div>
 
@@ -157,548 +230,670 @@ svg .rotulo-linha { fill: var(--tinta); font-size: 12px; }
 "use strict";
 const DADOS = /*__DADOS__*/null;
 
-{ const tema = /tema=(light|dark)/.exec(location.hash); if (tema) document.documentElement.dataset.theme = tema[1]; }
+{ const tema = /tema=(light|dark)/.exec(location.hash) ;
+  let salvo = null; try { salvo = localStorage.getItem("painel-tema"); } catch (e) { /* ok */ }
+  const t = tema ? tema[1] : salvo; if (t) document.documentElement.dataset.theme = t; }
 
-// ---------------------------------------------------------------- dados
+// ================================================================ dados
 const INST = new Map([...DADOS.instituicoes].sort((a, b) => a[1].localeCompare(b[1], "pt-BR"))
-  .map(([id, nome, curto]) => [id, { id, nome, curto }]));
+  .map(([id, nome, curto, segmento]) => [id, { id, nome, curto, segmento }]));
 const PERFIS = new Map(DADOS.perfis.map(([id, inst, plat, ident, rotulo]) => [id, { id, inst, plat, ident, rotulo }]));
 const METRICAS = new Map(DADOS.metricas.map(([codigo, descricao, unidade]) => [codigo, { descricao, unidade }]));
-const ATUAIS = new Map();
-for (const [perfil, metrica, valor, texto, ref, ini, fim] of DADOS.atuais) {
-  if (!ATUAIS.has(perfil)) ATUAIS.set(perfil, new Map());
-  ATUAIS.get(perfil).set(metrica, { valor, texto, ref, ini, fim });
+// Série de cada perfil/métrica, em ordem de data: [ref, valor, texto, ini, fim]
+const SERIES = new Map();
+for (const [perfil, metrica, ref, valor, texto, ini, fim] of DADOS.historico) {
+  const chave = perfil + "|" + metrica;
+  if (!SERIES.has(chave)) SERIES.set(chave, []);
+  const lista = SERIES.get(chave);
+  if (lista.length && lista[lista.length - 1][0] === ref) lista.pop(); // mesmo dia: vale o último
+  lista.push([ref, valor, texto, ini, fim]);
 }
-const PLATAFORMAS = {
-  app_store: "App Store", google_play: "Google Play", consumidor_gov: "Consumidor.gov.br",
-  reclame_aqui: "Reclame Aqui", instagram: "Instagram",
-};
-// Rótulo curto e formato por métrica; "menor" = menor é melhor.
+const DATAS = [...new Set(DADOS.historico.map((h) => h[2]))].sort().reverse();
+const PLATAFORMAS = { app_store: "App Store", google_play: "Google Play", consumidor_gov: "Consumidor.gov.br",
+  reclame_aqui: "Reclame Aqui", instagram: "Instagram" };
+// [rótulo, formato, sentido]: sentido "menor" = menor é melhor; "volume" = sem melhor/pior.
 const ROTULOS = {
-  nota_media: ["Nota média (1–5)", "nota"],
-  total_reclamacoes: ["Reclamações", "contagem"],
-  pct_resolvidas: ["Resolvidas / índice de solução", "pct"],
-  pct_respondidas: ["Respondidas", "pct"],
-  nota_consumidor: ["Nota do consumidor", "nota"],
+  nota_media: ["Nota média", "nota", "maior"],
+  total_reclamacoes: ["Reclamações", "contagem", "volume"],
+  pct_resolvidas: ["Resolvidas / índice de solução", "pct", "maior"],
+  pct_respondidas: ["Respondidas", "pct", "maior"],
+  nota_consumidor: ["Nota do consumidor", "nota", "maior"],
   tempo_resposta_dias: ["Tempo de resposta", "dias", "menor"],
-  pct_voltaria_negocio: ["Voltariam a fazer negócio", "pct"],
+  pct_voltaria_negocio: ["Voltariam a fazer negócio", "pct", "maior"],
   aguardando_resposta: ["Aguardando resposta", "contagem", "menor"],
-  reclamacoes_avaliadas: ["Reclamações avaliadas", "contagem"],
-  nota_reclame_aqui: ["Nota Reclame Aqui (0–10)", "nota"],
-  seguidores: ["Seguidores", "contagem"],
-  posts_periodo: ["Posts no último mês", "contagem"],
+  reclamacoes_avaliadas: ["Reclamações avaliadas", "contagem", "volume"],
+  nota_reclame_aqui: ["Nota Reclame Aqui", "nota", "maior"],
+  seguidores: ["Seguidores", "contagem", "maior"],
+  posts_periodo: ["Posts no mês", "contagem", "volume"],
+  curtidas_media: ["Curtidas médias por post", "contagem", "maior"],
+  curtidas_total: ["Curtidas no mês", "contagem", "maior"],
+  posts_mes: ["Posts no mês", "contagem", "volume"],
 };
 const fmtInt = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
-const fmtDec = (casas) => new Intl.NumberFormat("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
+const fmtCompacto = new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 });
+const fmtDec = (c) => new Intl.NumberFormat("pt-BR", { minimumFractionDigits: c, maximumFractionDigits: c });
 const fmtData = (iso) => iso ? iso.slice(0, 10).split("-").reverse().join("/") : "—";
-function formatar(metrica, v) {
-  if (v === null || v === undefined || Number.isNaN(v)) return "—";
+const nomeMes = (iso) => new Date(iso.slice(0, 7) + "-15T12:00:00").toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+const vazio = (v) => v === null || v === undefined || Number.isNaN(v);
+function formatar(metrica, v, compacto) {
+  if (vazio(v)) return "—";
   const tipo = (ROTULOS[metrica] || [, "dec"])[1];
-  if (tipo === "contagem") return fmtInt.format(v);
+  if (tipo === "contagem") return compacto && v >= 10000 ? fmtCompacto.format(v) : fmtInt.format(v);
   if (tipo === "pct") return fmtDec(1).format(v) + "%";
-  if (tipo === "dias") return fmtDec(1).format(v) + " dias";
-  if (tipo === "nota") return fmtDec(2).format(v);
+  if (tipo === "dias") return fmtDec(1).format(v) + " d";
   return fmtDec(2).format(v);
 }
 const rotuloMetrica = (m) => (ROTULOS[m] || [METRICAS.get(m)?.descricao || m])[0];
+const sentido = (m) => (ROTULOS[m] || [, , "maior"])[2];
+const escalaNota = (plat, m) => m === "nota_reclame_aqui" || (plat === "reclame_aqui" && m === "nota_consumidor") ? 10 : 5;
 function nomePerfil(p, curto) {
-  const inst = INST.get(p.inst);
-  const base = inst ? inst.nome : "?";
+  const base = INST.get(p.inst)?.nome || "?";
   if (p.rotulo) return `${base} · ${p.rotulo}`;
   if (p.plat === "instagram" && !curto) return `${base} (@${p.ident})`;
   return base;
 }
-const perfisDe = (plat) => [...PERFIS.values()].filter((p) => p.plat === plat);
-const valorAtual = (perfil, metrica) => ATUAIS.get(perfil)?.get(metrica) || null;
 
-// ---------------------------------------------------------------- utilidades de DOM
+// ================================================================ estado e filtros
+const estado = {
+  data: DATAS[0] || null,
+  destaque: "",
+  selecionadas: new Set(INST.keys()),
+  aba: 0,
+};
+const local = {}; // escolhas de cada cartão (métrica, corte...), preservadas entre redesenhos
+try {
+  const salvo = JSON.parse(localStorage.getItem("painel-estado") || "{}");
+  if (salvo.destaque && INST.has(Number(salvo.destaque))) estado.destaque = salvo.destaque;
+  if (Array.isArray(salvo.selecionadas) && salvo.selecionadas.length) {
+    const validas = salvo.selecionadas.filter((id) => INST.has(id));
+    if (validas.length) estado.selecionadas = new Set(validas);
+  }
+  if (Number.isInteger(salvo.aba)) estado.aba = salvo.aba;
+  Object.assign(local, salvo.local || {});
+} catch (e) { /* sem armazenamento */ }
+const pedida = /aba=(\d)/.exec(location.hash);
+if (pedida) estado.aba = Number(pedida[1]);
+const destaquePedido = /destaque=(\d+)/.exec(location.hash);
+if (destaquePedido && INST.has(Number(destaquePedido[1]))) estado.destaque = destaquePedido[1];
+function salvarEstado() {
+  try { localStorage.setItem("painel-estado", JSON.stringify({ destaque: estado.destaque,
+    selecionadas: [...estado.selecionadas], aba: estado.aba, local })); } catch (e) { /* ok */ }
+}
+const visivel = (instId) => estado.selecionadas.has(instId);
+const perfisDe = (plat) => [...PERFIS.values()].filter((p) => p.plat === plat && visivel(p.inst));
+
+// Valor vigente na data escolhida: o último snapshot até ela.
+function vigente(perfil, metrica, data = estado.data) {
+  const lista = SERIES.get(perfil + "|" + metrica);
+  if (!lista || !data) return null;
+  for (let i = lista.length - 1; i >= 0; i--) {
+    if (lista[i][0] <= data) {
+      const [ref, valor, texto, ini, fim] = lista[i];
+      return { ref, valor, texto, ini, fim, anterior: i > 0 ? lista[i - 1][1] : null };
+    }
+  }
+  return null;
+}
+
+// ================================================================ DOM
 function el(tag, attrs = {}, filhos = []) {
   const e = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
     if (v === null || v === undefined || v === false) continue;
     if (k === "class") e.className = v;
     else if (k === "text") e.textContent = v;
+    else if (k === "style" && typeof v === "object") Object.assign(e.style, v);
     else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
     else e.setAttribute(k, v === true ? "" : v);
   }
-  for (const f of [].concat(filhos)) if (f !== null && f !== undefined) e.append(f);
+  for (const f of [].concat(filhos)) if (f !== null && f !== undefined && f !== false) e.append(f);
   return e;
 }
-const SVG = "http://www.w3.org/2000/svg";
-function s(tag, attrs = {}) {
-  const e = document.createElementNS(SVG, tag);
-  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
-  return e;
-}
+const NS = "http://www.w3.org/2000/svg";
+function s(tag, attrs = {}) { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; }
 const dica = document.getElementById("dica");
 function mostrarDica(evento, titulo, linhas) {
   dica.replaceChildren(el("div", { class: "t", text: titulo }),
     ...linhas.map(([a, b]) => el("div", { class: "l" }, [el("span", { text: a }), el("b", { text: b })])));
   dica.style.display = "block";
   let x, y;
-  if (evento.clientX !== undefined && evento.type.startsWith("mouse")) { x = evento.clientX; y = evento.clientY; }
-  else { const r = evento.currentTarget.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top; }
+  if (evento.type.startsWith("mouse")) { x = evento.clientX; y = evento.clientY; }
+  else { const r = evento.currentTarget.getBoundingClientRect(); x = r.left + r.width / 2; y = r.bottom; }
   const w = dica.offsetWidth, h = dica.offsetHeight;
   dica.style.left = Math.min(window.innerWidth - w - 8, Math.max(8, x + 14)) + "px";
-  dica.style.top = (y + h + 20 > window.innerHeight ? y - h - 12 : y + 16) + "px";
+  dica.style.top = (y + h + 24 > window.innerHeight ? y - h - 12 : y + 16) + "px";
 }
 const esconderDica = () => { dica.style.display = "none"; };
-
-let destaque = "";
-const ouvintesDestaque = [];
-function aoMudarDestaque(fn) { ouvintesDestaque.push(fn); }
-
-// Botão "Ver tabela" que alterna entre o gráfico e a tabela equivalente.
-function alternavel(grafico, tabela) {
-  const caixa = el("div", {}, [grafico]);
-  let emTabela = false;
-  const botao = el("button", { type: "button", "aria-pressed": "false", text: "Ver tabela", onclick: () => {
-    emTabela = !emTabela;
-    botao.textContent = emTabela ? "Ver gráfico" : "Ver tabela";
-    botao.setAttribute("aria-pressed", String(emTabela));
-    caixa.replaceChildren(emTabela ? tabela() : grafico);
-  } });
-  return { caixa, botao };
+function comDica(alvo, titulo, linhas) {
+  const f = (e) => mostrarDica(e, titulo, linhas);
+  alvo.addEventListener("mousemove", f); alvo.addEventListener("focus", f);
+  alvo.addEventListener("mouseleave", esconderDica); alvo.addEventListener("blur", esconderDica);
 }
-
-function tabelaSimples(cabecalho, linhas, destacar) {
+function seletor(rotulo, opcoes, valor, aoMudar) {
+  const sel = el("select", { "aria-label": rotulo }, opcoes.map(([v, t]) => el("option", { value: v, text: t })));
+  sel.value = valor;
+  sel.addEventListener("change", () => aoMudar(sel.value));
+  return sel;
+}
+function cartao(titulo, subtitulo, controles, corpo, rodape) {
+  return el("div", { class: "cartao" }, [
+    el("div", { class: "cartao-topo" }, [el("div", {}, [el("h2", { text: titulo }), subtitulo]), el("div", { class: "controles" }, controles)]),
+    corpo, rodape ? el("p", { class: "nota", text: rodape }) : null,
+  ]);
+}
+function janela(registro, extra) {
+  if (!registro) return null;
+  const partes = [];
+  if (registro.ini) partes.push(`Janela ${fmtData(registro.ini)} – ${fmtData(registro.fim)}`);
+  partes.push(`coleta de ${fmtData(registro.ref)}`);
+  if (extra) partes.push(extra);
+  return el("div", { class: "janela", text: partes.join(" · ") });
+}
+// Alterna gráfico/tabela; a escolha fica guardada por cartão.
+function alternavel(chave, grafico, tabela) {
+  const emTabela = !!local[chave + ":tabela"];
+  const botao = el("button", { type: "button", "aria-pressed": String(emTabela), text: emTabela ? "Ver gráfico" : "Ver tabela",
+    onclick: () => { local[chave + ":tabela"] = !emTabela; salvarEstado(); redesenhar(); } });
+  return { corpo: emTabela ? tabela() : grafico(), botao };
+}
+function tabela(cabecalho, linhas) {
   return el("div", { class: "rolagem" }, [el("table", {}, [
     el("thead", {}, [el("tr", {}, cabecalho.map((c) => el("th", { scope: "col", text: c })))]),
-    el("tbody", {}, linhas.map((l) => el("tr", { class: destacar && destacar(l) ? "destaque" : null },
+    el("tbody", {}, linhas.map((l) => el("tr", { class: l.destaque ? "destaque" : null },
       l.celulas.map((c) => el("td", { class: c === "—" ? "vazio" : null, text: c }))))),
   ])]);
 }
+const ehDestaque = (instId) => estado.destaque !== "" && String(instId) === estado.destaque;
 
-// ---------------------------------------------------------------- barras
-// itens: [{perfil, inst, nome, valor, extra?: [[rotulo, texto]]}]
-function graficoBarras(itens, metrica) {
-  const menor = (ROTULOS[metrica] || [])[2] === "menor";
-  const comValor = itens.filter((i) => i.valor !== null && i.valor !== undefined)
-    .sort((a, b) => menor ? a.valor - b.valor : b.valor - a.valor);
-  const semValor = itens.filter((i) => i.valor === null || i.valor === undefined)
-    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
-  const maximo = Math.max(...comValor.map((i) => i.valor), 0) || 1;
-  const lista = el("div", { class: "barras", role: "list" });
-  const linhas = [];
-  for (const item of [...comValor, ...semValor]) {
-    const texto = formatar(metrica, item.valor);
-    const pct = item.valor === null || item.valor === undefined ? 0 : Math.max(0, item.valor) / maximo * 100;
-    const linha = el("div", { class: "barra", role: "listitem", tabindex: "0",
-      "aria-label": `${item.nome}: ${texto}` }, [
-      el("span", { class: "nome", text: item.nome }),
-      el("span", { class: "trilho" }, [
-        item.valor === null || item.valor === undefined ? null
-          : el("span", { class: "marca", style: `width: calc((100% - 90px) * ${pct / 100})` }),
-        el("span", { class: "numero" + (texto === "—" ? " vazio" : ""), text: texto === "—" ? "sem dado" : texto }),
-      ]),
-    ]);
-    const mostrar = (e) => mostrarDica(e, item.titulo || item.nome, [[rotuloMetrica(metrica), texto], ...(item.extra || [])]);
-    linha.addEventListener("mousemove", mostrar);
-    linha.addEventListener("focus", mostrar);
-    linha.addEventListener("mouseleave", esconderDica);
-    linha.addEventListener("blur", esconderDica);
-    linhas.push([linha, item]);
-    lista.append(linha);
+// ================================================================ ordenação e corte
+function ordenar(itens, metrica) {
+  const menor = sentido(metrica) === "menor";
+  const com = itens.filter((i) => !vazio(i.valor)).sort((a, b) => menor ? a.valor - b.valor : b.valor - a.valor);
+  const sem = itens.filter((i) => vazio(i.valor)).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+  com.forEach((i, k) => { i.posicao = k + 1; });
+  return { com, sem };
+}
+function cortar(com, corte) {
+  if (corte === "top") return com.slice(0, 10);
+  if (corte === "base") return com.slice(-10);
+  return com;
+}
+const opcoesCorte = (metrica) => sentido(metrica) === "volume"
+  ? [["todas", "Todas"], ["top", "10 maiores"], ["base", "10 menores"]]
+  : [["todas", "Todas"], ["top", "10 melhores"], ["base", "10 piores"]];
+
+// ================================================================ gráficos de linhas (barras / pontos)
+// itens: [{inst, nome, titulo, valor, extra: [[r, t]], chip}]
+function graficoRanking(itens, metrica, { tipo = "barras", escala = null, corte = "todas" } = {}) {
+  const { com, sem } = ordenar(itens, metrica);
+  if (!com.length) return el("p", { class: "vazio-grafico", text: "Ainda não há dados desta métrica para o filtro escolhido." });
+  const mostrados = [...cortar(com, corte), ...(corte === "todas" ? sem : [])];
+  const valores = com.map((i) => i.valor);
+  let x0 = 0, x1 = Math.max(...valores) || 1;
+  if (tipo === "pontos") {
+    x1 = escala || Math.max(...valores);
+    x0 = Math.max(escala === 10 ? 0 : 1, Math.floor((Math.min(...valores) - 0.05) * 2) / 2);
+    if (x1 - x0 < 1) x0 = x1 - 1;
   }
-  const pintar = () => {
-    for (const [linha, item] of linhas) {
-      const ativo = destaque !== "" && String(item.inst) === destaque;
-      linha.classList.toggle("destaque", ativo);
-      linha.classList.toggle("apagada", destaque !== "" && !ativo);
+  if (tipo === "barras" && (ROTULOS[metrica] || [])[1] === "pct") x1 = 100;
+  const pos = (v) => (v - x0) / (x1 - x0) * 100;
+  const passos = tipo === "pontos" ? (() => { const n = []; const p = (x1 - x0) > 3 ? 1 : 0.5; for (let v = x0; v <= x1 + 1e-9; v += p) n.push(v); return n; })() : [];
+  const caixa = el("div", { class: "linhas" + (estado.destaque !== "" ? " com-destaque" : ""), role: "list" });
+  if (passos.length) {
+    caixa.append(el("div", { class: "eixo-topo", "aria-hidden": "true" }, [el("span"), el("div", { class: "escala" },
+      passos.map((v) => el("span", { style: { left: pos(v) + "%" }, text: fmtDec(v % 1 ? 1 : 0).format(v) }))), el("span")]));
+  }
+  for (const item of mostrados) {
+    const texto = formatar(metrica, item.valor);
+    const area = el("div", { class: "area" });
+    if (tipo === "pontos") {
+      passos.forEach((v) => area.append(el("span", { class: "grade-v", style: { left: pos(v) + "%" } })));
+      area.append(el("span", { class: "guia" }));
+      if (!vazio(item.valor)) area.append(el("span", { class: "ponto", style: { left: pos(item.valor) + "%" } }));
+    } else {
+      area.append(el("span", { class: "trilho" }));
+      if (!vazio(item.valor)) area.append(el("span", { class: "barra", style: { width: Math.max(0.4, pos(Math.max(0, item.valor))) + "%" } }));
     }
+    const linha = el("div", { class: "linha" + (ehDestaque(item.inst) ? " destaque" : ""), role: "listitem", tabindex: "0",
+      "aria-label": `${item.titulo || item.nome}: ${texto}` }, [
+      el("span", { class: "nome", text: item.nome }),
+      area,
+      el("span", { class: "valor" + (vazio(item.valor) ? " vazio" : "") }, [vazio(item.valor) ? "sem dado" : texto,
+        item.chip ? el("span", { class: "chip", text: item.chip }) : null]),
+    ]);
+    comDica(linha, item.titulo || item.nome, [[rotuloMetrica(metrica), texto],
+      ...(item.posicao ? [["Posição", `${item.posicao}º de ${com.length}`]] : []), ...(item.extra || [])]);
+    caixa.append(linha);
+  }
+  if (corte !== "todas" && sem.length) caixa.append(el("p", { class: "nota", text: `${sem.length} sem dado não aparecem neste corte.` }));
+  return caixa;
+}
+function tabelaRanking(itens, metrica, extras = []) {
+  const { com, sem } = ordenar(itens, metrica);
+  return tabela(["#", "Perfil", rotuloMetrica(metrica), ...extras],
+    [...com, ...sem].map((i) => ({ destaque: ehDestaque(i.inst),
+      celulas: [i.posicao ? String(i.posicao) : "—", i.titulo || i.nome, formatar(metrica, i.valor), ...(i.extra || []).map(([, t]) => t)] })));
+}
+
+// Cartão de ranking para uma plataforma, com seletor de métrica e corte.
+function cartaoRanking(chave, titulo, plataforma, metricas, rodape, extrasFn) {
+  const metrica = metricas.includes(local[chave + ":m"]) ? local[chave + ":m"] : metricas[0];
+  const corte = local[chave + ":c"] || "todas";
+  const itens = perfisDe(plataforma).map((p) => {
+    const r = vigente(p.id, metrica);
+    return { inst: p.inst, nome: nomePerfil(p, true), titulo: nomePerfil(p), valor: r ? r.valor : null, registro: r,
+             extra: extrasFn ? extrasFn(p, r) : [], chip: null };
+  });
+  if (extrasFn) itens.forEach((i) => { const chip = i.extra.find(([r]) => r === "Reputação"); if (chip && chip[1] !== "—") i.chip = chip[1]; });
+  const registro = itens.map((i) => i.registro).find((r) => r);
+  const tipo = (ROTULOS[metrica] || [])[1] === "nota" ? "pontos" : "barras";
+  const { corpo, botao } = alternavel(chave, () => graficoRanking(itens, metrica, { tipo, escala: escalaNota(plataforma, metrica), corte }),
+    () => tabelaRanking(itens, metrica, (itens[0]?.extra || []).map(([r]) => r)));
+  const controles = [
+    metricas.length > 1 ? seletor("Métrica", metricas.map((m) => [m, rotuloMetrica(m)]), metrica, (v) => { local[chave + ":m"] = v; salvarEstado(); redesenhar(); }) : null,
+    seletor("Mostrar", opcoesCorte(metrica), corte, (v) => { local[chave + ":c"] = v; salvarEstado(); redesenhar(); }),
+    botao,
+  ];
+  const notas = [];
+  if (sentido(metrica) === "menor") notas.push("Menor é melhor.");
+  if (tipo === "pontos") notas.push(`Escala de ${escalaNota(plataforma, metrica) === 10 ? "0 a 10" : "1 a 5"}; o eixo começa perto dos menores valores para mostrar as diferenças.`);
+  if (rodape) notas.push(rodape);
+  return cartao(titulo, janela(registro), controles, corpo, notas.join(" "));
+}
+
+// ================================================================ halteres (App Store x Google Play)
+function cartaoHalteres() {
+  const chave = "lojas-haltere";
+  const corte = local[chave + ":c"] || "todas";
+  const media = (plat, inst) => {
+    const vals = perfisDe(plat).filter((p) => p.inst === inst).map((p) => vigente(p.id, "nota_media")?.valor).filter((v) => !vazio(v));
+    return vals.length ? vals.reduce((a, v) => a + v, 0) / vals.length : null;
   };
-  pintar();
-  aoMudarDestaque(pintar);
-  if (!comValor.length) return el("p", { class: "vazio-grafico", text: "Ainda não há dados desta métrica." });
-  return lista;
-}
-
-function tabelaDeBarras(itens, metrica, extras = []) {
-  const ordenados = [...itens].sort((a, b) => (b.valor ?? -Infinity) - (a.valor ?? -Infinity));
-  return tabelaSimples(["Perfil", rotuloMetrica(metrica), ...extras],
-    ordenados.map((i) => ({ inst: i.inst, celulas: [i.nome, formatar(metrica, i.valor),
-      ...(i.extra || []).map(([, t]) => t)] })),
-    (l) => destaque !== "" && String(l.inst) === destaque);
-}
-
-// Cartão com seletor de métrica + barras + tabela.
-function cartaoBarras(titulo, plataforma, metricas, notaRodape, extrasFn) {
-  const cartao = el("div", { class: "cartao" });
-  const seletor = el("select", { "aria-label": "Métrica" },
-    metricas.map((m) => el("option", { value: m, text: rotuloMetrica(m) })));
-  const area = el("div");
-  const rodape = el("p", { class: "nota" });
-  const controles = el("div", { class: "controles" }, [metricas.length > 1 ? seletor : null]);
-  cartao.append(el("div", { class: "cartao-topo" }, [el("h2", { text: titulo }), controles]), area, rodape);
-  const desenhar = () => {
-    const metrica = seletor.value || metricas[0];
-    const itens = perfisDe(plataforma).map((p) => {
-      const a = valorAtual(p.id, metrica);
-      return { perfil: p.id, inst: p.inst, nome: nomePerfil(p, true), titulo: nomePerfil(p), valor: a ? a.valor : null,
-               extra: extrasFn ? extrasFn(p, a) : (a && a.ini ? [["Período", `${fmtData(a.ini)} a ${fmtData(a.fim)}`]] : []) };
-    });
-    const referencia = itens.map((i) => valorAtual(i.perfil, metrica)).find((a) => a);
-    const { caixa, botao } = alternavel(graficoBarras(itens, metrica),
-      () => tabelaDeBarras(itens, metrica, (itens[0]?.extra || []).map(([r]) => r)));
-    controles.querySelector("button")?.remove();
-    controles.append(botao);
-    area.replaceChildren(caixa);
-    const partes = [];
-    if (referencia && referencia.ini) partes.push(`Período: ${fmtData(referencia.ini)} a ${fmtData(referencia.fim)}.`);
-    if (referencia) partes.push(`Coleta: ${fmtData(referencia.ref)}.`);
-    if ((ROTULOS[metrica] || [])[2] === "menor") partes.push("Menor é melhor.");
-    if (notaRodape) partes.push(notaRodape);
-    rodape.textContent = partes.join(" ");
+  const itens = [...INST.values()].filter((i) => visivel(i.id)).map((i) => {
+    const a = media("app_store", i.id), g = media("google_play", i.id);
+    const ambos = [a, g].filter((v) => !vazio(v));
+    return { inst: i.id, nome: i.nome, a, g, valor: ambos.length ? ambos.reduce((x, v) => x + v, 0) / ambos.length : null };
+  });
+  const { com, sem } = ordenar(itens, "nota_media");
+  const registro = perfisDe("app_store").map((p) => vigente(p.id, "nota_media")).find((r) => r);
+  const grafico = () => {
+    if (!com.length) return el("p", { class: "vazio-grafico", text: "Ainda não há notas das lojas." });
+    const todos = com.flatMap((i) => [i.a, i.g]).filter((v) => !vazio(v));
+    const x1 = 5, x0 = Math.max(1, Math.floor((Math.min(...todos) - 0.05) * 2) / 2);
+    const pos = (v) => (v - x0) / (x1 - x0) * 100;
+    const passos = []; for (let v = x0; v <= x1 + 1e-9; v += (x1 - x0) > 2 ? 1 : 0.5) passos.push(v);
+    const caixa = el("div", { class: "linhas" + (estado.destaque !== "" ? " com-destaque" : ""), role: "list" });
+    caixa.append(el("div", { class: "legenda" }, [el("span", {}, [el("i", { style: { background: "var(--serie-1)" } }), "App Store"]),
+      el("span", {}, [el("i", { style: { background: "var(--serie-2)" } }), "Google Play"])]));
+    caixa.append(el("div", { class: "eixo-topo", "aria-hidden": "true" }, [el("span"), el("div", { class: "escala" },
+      passos.map((v) => el("span", { style: { left: pos(v) + "%" }, text: fmtDec(v % 1 ? 1 : 0).format(v) }))), el("span")]));
+    for (const i of [...cortar(com, corte), ...(corte === "todas" ? sem : [])]) {
+      const area = el("div", { class: "area" });
+      passos.forEach((v) => area.append(el("span", { class: "grade-v", style: { left: pos(v) + "%" } })));
+      if (!vazio(i.a) && !vazio(i.g)) {
+        const l = Math.min(pos(i.a), pos(i.g)), r = Math.max(pos(i.a), pos(i.g));
+        area.append(el("span", { class: "haste", style: { left: l + "%", width: (r - l) + "%" } }));
+      }
+      if (!vazio(i.a)) area.append(el("span", { class: "ponto", style: { left: pos(i.a) + "%" } }));
+      if (!vazio(i.g)) area.append(el("span", { class: "ponto s2", style: { left: pos(i.g) + "%" } }));
+      const dif = !vazio(i.a) && !vazio(i.g) ? i.a - i.g : null;
+      const linha = el("div", { class: "linha" + (ehDestaque(i.inst) ? " destaque" : ""), role: "listitem", tabindex: "0",
+        "aria-label": `${i.nome}: App Store ${formatar("nota_media", i.a)}, Google Play ${formatar("nota_media", i.g)}` }, [
+        el("span", { class: "nome", text: i.nome }), area,
+        el("span", { class: "valor" + (vazio(i.valor) ? " vazio" : ""), text: vazio(i.valor) ? "sem dado" : formatar("nota_media", i.valor) }),
+      ]);
+      comDica(linha, i.nome, [["App Store", formatar("nota_media", i.a)], ["Google Play", formatar("nota_media", i.g)],
+        ["Diferença", dif === null ? "—" : (dif > 0 ? "+" : "") + fmtDec(2).format(dif)], ...(i.posicao ? [["Posição (média)", `${i.posicao}º de ${com.length}`]] : [])]);
+      caixa.append(linha);
+    }
+    return caixa;
   };
-  seletor.addEventListener("change", desenhar);
-  desenhar();
-  return cartao;
+  const { corpo, botao } = alternavel(chave, grafico, () => tabela(["#", "Instituição", "App Store", "Google Play", "Média"],
+    [...com, ...sem].map((i) => ({ destaque: ehDestaque(i.inst), celulas: [i.posicao ? String(i.posicao) : "—", i.nome,
+      formatar("nota_media", i.a), formatar("nota_media", i.g), formatar("nota_media", i.valor)] }))));
+  return cartao("App Store × Google Play", janela(registro), [
+    seletor("Mostrar", opcoesCorte("nota_media"), corte, (v) => { local[chave + ":c"] = v; salvarEstado(); redesenhar(); }), botao],
+    corpo, "Nota média por instituição em cada loja (média dos apps quando há mais de um), ordenada pela média das duas. Valor atual exibido na loja do Brasil.");
 }
 
-// ---------------------------------------------------------------- linhas (evolução)
+// ================================================================ linhas no tempo
 const CORES = ["var(--serie-1)", "var(--serie-2)", "var(--serie-3)"];
-function graficoLinhas(series, metrica) {
-  // series: [{nome, pontos: [[dataIso, valor]]}]
+function graficoTempo(series, metrica, plataforma) {
   const caixa = el("div");
-  const todas = series.flatMap((s) => s.pontos);
-  if (!todas.length) return el("p", { class: "vazio-grafico", text: "Sem histórico para esta combinação." });
+  const todas = series.flatMap((sr) => sr.pontos);
+  if (!todas.length) return el("p", { class: "vazio-grafico", text: "Sem histórico para esta combinação no período." });
   const datas = [...new Set(todas.map(([d]) => d))].sort();
-  caixa.append(el("div", { class: "legenda" }, series.map((s, i) =>
-    el("span", {}, [el("i", { style: `background:${CORES[i]}` }), s.nome]))));
+  caixa.append(el("div", { class: "legenda" }, series.map((sr, i) => el("span", {}, [el("i", { class: "traco", style: { background: CORES[i] } }), sr.nome]))));
   const desenhar = () => {
     const largura = Math.max(320, caixa.clientWidth || 800);
-    const altura = 300, m = { t: 12, r: 150, b: 28, l: 64 };
+    const altura = 320, m = { t: 14, r: 150, b: 30, l: 64 };
     const w = largura - m.l - m.r, h = altura - m.t - m.b;
     const t0 = Date.parse(datas[0]), t1 = Date.parse(datas[datas.length - 1]);
     const x = (d) => datas.length === 1 ? m.l + w / 2 : m.l + (Date.parse(d) - t0) / (t1 - t0) * w;
     let vmin = Math.min(...todas.map(([, v]) => v)), vmax = Math.max(...todas.map(([, v]) => v));
-    // Amplitude mínima por tipo: evita que uma variação de 0,001 pareça um tombo.
     const tipo = (ROTULOS[metrica] || [, "dec"])[1];
-    const minima = tipo === "pct" ? 10 : tipo === "dias" ? 2
-      : tipo === "nota" ? (metrica === "nota_reclame_aqui" || (metrica === "nota_consumidor" && vmax > 5) ? 2 : 1)
-      : Math.max(10, Math.abs(vmax) * 0.1);
+    const minima = tipo === "pct" ? 10 : tipo === "dias" ? 2 : tipo === "nota" ? (escalaNota(plataforma, metrica) === 10 ? 2 : 1) : Math.max(10, Math.abs(vmax) * 0.1);
     if (vmax - vmin < minima) { const meio = (vmax + vmin) / 2; vmin = meio - minima / 2; vmax = meio + minima / 2; }
-    if (tipo === "pct") { vmin = Math.max(0, vmin); vmax = Math.min(100, Math.max(vmax, vmin + minima)); }
-    if (tipo === "contagem" || tipo === "dias") vmin = Math.max(0, vmin);
-    const passo = (() => { const bruto = (vmax - vmin) / 4; const p = 10 ** Math.floor(Math.log10(bruto));
-      return [1, 2, 2.5, 5, 10].map((k) => k * p).find((k) => k >= bruto); })();
-    const y0 = Math.floor(vmin / passo) * passo, y1 = Math.ceil(vmax / passo) * passo;
+    if (tipo === "pct") { vmin = Math.max(0, vmin); vmax = Math.min(100, vmax); }
+    if (tipo === "nota") { vmax = Math.min(escalaNota(plataforma, metrica), vmax); }
+    if (tipo === "contagem" || tipo === "dias" || tipo === "nota") vmin = Math.max(tipo === "nota" && escalaNota(plataforma, metrica) === 5 ? 1 : 0, vmin);
+    const bruto = (vmax - vmin) / 4, p10 = 10 ** Math.floor(Math.log10(bruto || 1));
+    const passo = [1, 2, 2.5, 5, 10].map((k) => k * p10).find((k) => k >= bruto) || p10;
+    const y0 = Math.floor(vmin / passo) * passo, y1 = Math.ceil(vmax / passo) * passo || passo;
     const y = (v) => m.t + h - (v - y0) / (y1 - y0) * h;
-    const svg = s("svg", { width: largura, height: altura, role: "img",
-      "aria-label": `Evolução de ${rotuloMetrica(metrica)}` });
+    const svg = s("svg", { width: largura, height: altura, role: "img", "aria-label": `Evolução de ${rotuloMetrica(metrica)}` });
     for (let v = y0; v <= y1 + passo / 2; v += passo) {
       svg.append(s("line", { x1: m.l, x2: m.l + w, y1: y(v), y2: y(v), stroke: "var(--grade)", "stroke-width": 1 }));
-      const t = s("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }); t.textContent = formatar(metrica, v);
-      svg.append(t);
+      const t = s("text", { x: m.l - 10, y: y(v) + 4, "text-anchor": "end" }); t.textContent = formatar(metrica, v, true); svg.append(t);
     }
-    svg.append(s("line", { x1: m.l, x2: m.l + w, y1: m.t + h, y2: m.t + h, stroke: "var(--eixo)", "stroke-width": 1 }));
     const marcas = datas.length <= 6 ? datas : [0, 0.25, 0.5, 0.75, 1].map((f) => datas[Math.round(f * (datas.length - 1))]);
-    for (const d of [...new Set(marcas)]) {
-      const t = s("text", { x: x(d), y: altura - 8, "text-anchor": "middle" }); t.textContent = fmtData(d);
-      svg.append(t);
-    }
-    const rotulosY = [];
-    series.forEach((serie, i) => {
-      if (!serie.pontos.length) return;
-      const caminho = serie.pontos.map(([d, v], k) => `${k ? "L" : "M"}${x(d)},${y(v)}`).join("");
-      svg.append(s("path", { d: caminho, fill: "none", stroke: CORES[i], "stroke-width": 2,
-        "stroke-linejoin": "round", "stroke-linecap": "round" }));
-      for (const [d, v] of serie.pontos) {
-        svg.append(s("circle", { cx: x(d), cy: y(v), r: 4, fill: CORES[i], stroke: "var(--superficie)", "stroke-width": 2 }));
-      }
-      const [du, vu] = serie.pontos[serie.pontos.length - 1];
-      let ry = y(vu) + 4;
-      for (const outro of rotulosY) if (Math.abs(outro - ry) < 14) ry = outro + 14;
-      rotulosY.push(ry);
-      const t = s("text", { x: x(du) + 10, y: ry, class: "rotulo-linha" });
-      t.textContent = serie.nome.length > 22 ? serie.nome.slice(0, 21) + "…" : serie.nome;
-      svg.append(t);
+    for (const d of [...new Set(marcas)]) { const t = s("text", { x: x(d), y: altura - 8, "text-anchor": "middle" }); t.textContent = fmtData(d); svg.append(t); }
+    const rotulos = [];
+    series.forEach((sr, i) => {
+      if (!sr.pontos.length) return;
+      svg.append(s("path", { d: sr.pontos.map(([d, v], k) => `${k ? "L" : "M"}${x(d)},${y(v)}`).join(""), fill: "none",
+        stroke: CORES[i], "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+      for (const [d, v] of sr.pontos) svg.append(s("circle", { cx: x(d), cy: y(v), r: 4, fill: CORES[i], stroke: "var(--superficie)", "stroke-width": 2 }));
+      const [du, vu] = sr.pontos[sr.pontos.length - 1];
+      let ry = y(vu) + 4; for (const o of rotulos) if (Math.abs(o - ry) < 15) ry = o + 15; rotulos.push(ry);
+      const t = s("text", { x: x(du) + 10, y: ry, class: "rotulo-linha" }); t.textContent = sr.nome.length > 22 ? sr.nome.slice(0, 21) + "…" : sr.nome; svg.append(t);
     });
     const guia = s("line", { y1: m.t, y2: m.t + h, stroke: "var(--eixo)", "stroke-width": 1, visibility: "hidden" });
     svg.append(guia);
-    const area = s("rect", { x: m.l, y: m.t, width: w, height: h, fill: "transparent" });
-    area.addEventListener("mousemove", (e) => {
-      const r = svg.getBoundingClientRect();
-      const px = e.clientX - r.left;
+    const alvo = s("rect", { x: m.l, y: m.t, width: w, height: h, fill: "transparent" });
+    alvo.addEventListener("mousemove", (e) => {
+      const px = e.clientX - svg.getBoundingClientRect().left;
       const d = datas.reduce((a, b) => Math.abs(x(b) - px) < Math.abs(x(a) - px) ? b : a);
       guia.setAttribute("x1", x(d)); guia.setAttribute("x2", x(d)); guia.setAttribute("visibility", "visible");
-      mostrarDica(e, fmtData(d), series.map((sr) => {
-        const p = sr.pontos.find(([dd]) => dd === d);
-        return [sr.nome, p ? formatar(metrica, p[1]) : "—"];
-      }));
+      mostrarDica(e, fmtData(d), series.map((sr) => { const p = sr.pontos.find(([dd]) => dd === d); return [sr.nome, p ? formatar(metrica, p[1]) : "—"]; }));
     });
-    area.addEventListener("mouseleave", () => { guia.setAttribute("visibility", "hidden"); esconderDica(); });
-    svg.append(area);
+    alvo.addEventListener("mouseleave", () => { guia.setAttribute("visibility", "hidden"); esconderDica(); });
+    svg.append(alvo);
     caixa.querySelector("svg")?.remove();
     caixa.append(svg);
   };
   requestAnimationFrame(desenhar);
   new ResizeObserver(() => desenhar()).observe(caixa);
-  if (datas.length === 1) caixa.append(el("p", { class: "nota",
-    text: "Só há uma coleta até agora; as linhas aparecem conforme as coletas semanais se acumulam." }));
+  if (datas.length === 1) caixa.append(el("p", { class: "nota", text: "Só há uma coleta neste período; as linhas aparecem conforme as coletas semanais se acumulam." }));
   return caixa;
 }
 
-// ---------------------------------------------------------------- seções
+// ================================================================ seções
 function secaoVisaoGeral() {
   const sec = el("section", {});
-  // Frescor das coletas
-  const nomesColetores = { app_store: "App Store", google_play: "Google Play", consumidor_gov: "Consumidor.gov.br",
-    reclame_aqui: "Reclame Aqui", instagram: "Instagram" };
-  const ultimas = new Map(DADOS.execucoes.map(([c, st, ini, ok, erro]) => [c, { st, ini, ok, erro }]));
-  const ladrilhos = el("div", { class: "ladrilhos" }, Object.entries(nomesColetores).map(([c, nome]) => {
-    const e = ultimas.get(c);
-    const [cls, icone, txt] = !e ? ["nenhum", "–", "nunca rodou"]
-      : e.st === "sucesso" ? ["bom", "✓", "sucesso"] : e.st === "parcial" ? ["atencao", "!", "parcial"]
-      : e.st === "erro" ? ["critico", "✕", "erro"] : ["nenhum", "…", e.st.replace("_", " ")];
-    return el("div", { class: "ladrilho" }, [
-      el("div", { class: "rotulo", text: nome }),
-      el("div", { class: "valor", text: e ? fmtData(e.ini) : "—" }),
-      el("div", { class: "status" }, [el("i", { class: cls, "aria-hidden": "true", text: icone }), txt]),
-      e ? el("div", { class: "detalhe", text: `${e.ok} perfis ok, ${e.erro} com erro` }) : null,
-    ]);
-  }));
-  sec.append(el("div", { class: "cartao" }, [el("div", { class: "cartao-topo" },
-    [el("h2", { text: "Última coleta de cada fonte" })]), ladrilhos]));
-
-  // Comparativo por instituição
-  const agregados = (plat, metrica, modo, peso) => (inst) => {
-    const ps = perfisDe(plat).filter((p) => p.inst === inst);
-    const vals = ps.map((p) => [valorAtual(p.id, metrica)?.valor, peso ? valorAtual(p.id, peso)?.valor : 1])
-      .filter(([v, w]) => v !== null && v !== undefined && w !== null && w !== undefined);
+  const agregado = (plat, metrica, modo, peso) => (inst) => {
+    const vals = [...PERFIS.values()].filter((p) => p.plat === plat && p.inst === inst)
+      .map((p) => [vigente(p.id, metrica)?.valor, peso ? vigente(p.id, peso)?.valor : 1]).filter(([v, w]) => !vazio(v) && !vazio(w));
     if (!vals.length) return null;
     if (modo === "soma") return vals.reduce((a, [v]) => a + v, 0);
-    const pesoTotal = vals.reduce((a, [, w]) => a + w, 0);
-    return pesoTotal ? vals.reduce((a, [v, w]) => a + v * w, 0) / pesoTotal : null;
+    const total = vals.reduce((a, [, w]) => a + w, 0);
+    return total ? vals.reduce((a, [v, w]) => a + v * w, 0) / total : null;
   };
   const texto = (plat, metrica) => (inst) => {
-    const p = perfisDe(plat).find((pp) => pp.inst === inst);
-    return p ? valorAtual(p.id, metrica)?.texto ?? null : null;
+    const p = [...PERFIS.values()].find((pp) => pp.plat === plat && pp.inst === inst);
+    return p ? vigente(p.id, metrica)?.texto ?? null : null;
   };
   const colunas = [
-    ["App Store", "Nota", "nota_media", agregados("app_store", "nota_media", "media")],
-    ["Google Play", "Nota", "nota_media", agregados("google_play", "nota_media", "media")],
-    ["Consumidor.gov", "Reclamações", "total_reclamacoes", agregados("consumidor_gov", "total_reclamacoes", "soma")],
-    ["Consumidor.gov", "Solução", "pct_resolvidas", agregados("consumidor_gov", "pct_resolvidas", "media", "total_reclamacoes")],
-    ["Consumidor.gov", "Satisfação (1–5)", "nota_consumidor", agregados("consumidor_gov", "nota_consumidor", "media", "total_reclamacoes")],
-    ["Reclame Aqui", "Nota (0–10)", "nota_reclame_aqui", agregados("reclame_aqui", "nota_reclame_aqui", "media")],
+    ["App Store", "Nota", "nota_media", agregado("app_store", "nota_media", "media")],
+    ["Google Play", "Nota", "nota_media", agregado("google_play", "nota_media", "media")],
+    ["Consumidor.gov", "Reclamações", "total_reclamacoes", agregado("consumidor_gov", "total_reclamacoes", "soma")],
+    ["Consumidor.gov", "Solução", "pct_resolvidas", agregado("consumidor_gov", "pct_resolvidas", "media", "total_reclamacoes")],
+    ["Consumidor.gov", "Satisfação (1–5)", "nota_consumidor", agregado("consumidor_gov", "nota_consumidor", "media", "total_reclamacoes")],
+    ["Reclame Aqui", "Nota (0–10)", "nota_reclame_aqui", agregado("reclame_aqui", "nota_reclame_aqui", "media")],
     ["Reclame Aqui", "Reputação", null, texto("reclame_aqui", "status_reputacao")],
-    ["Instagram", "Seguidores", "seguidores", agregados("instagram", "seguidores", "soma")],
-    ["Instagram", "Posts no mês", "posts_periodo", agregados("instagram", "posts_periodo", "soma")],
+    ["Instagram", "Seguidores", "seguidores", agregado("instagram", "seguidores", "soma")],
+    ["Instagram", "Posts no mês", "posts_periodo", agregado("instagram", "posts_periodo", "soma")],
   ];
-  const linhas = [...INST.values()].map((inst) => ({ inst, valores: colunas.map((c) => c[3](inst.id)) }));
-  let ordem = { coluna: -1, desc: false };
-  const corpo = el("tbody");
-  const cabecalhos = [el("th", { scope: "col", "aria-sort": "none" }, [el("button", { type: "button", text: "Instituição",
-    onclick: () => ordenar(-1) })])].concat(colunas.map(([grupo, nome], i) =>
-    el("th", { scope: "col", "aria-sort": "none" }, [el("button", { type: "button", onclick: () => ordenar(i) },
-      [el("span", { class: "grupo", text: grupo }), nome])])));
-  function preencher() {
-    corpo.replaceChildren(...linhas.map((l) => el("tr", { class: destaque !== "" && String(l.inst.id) === destaque ? "destaque" : null }, [
-      el("td", { text: l.inst.nome }),
-      ...l.valores.map((v, i) => {
-        const c = colunas[i];
-        const t = v === null || v === undefined ? "—" : c[2] ? formatar(c[2], v) : v;
-        return el("td", { class: t === "—" ? "vazio" : null, text: t });
-      }),
-    ])));
+  const insts = [...INST.values()].filter((i) => visivel(i.id));
+  const linhas = insts.map((inst) => ({ inst, valores: colunas.map((c) => c[3](inst.id)) }));
+
+  // KPIs: resumo da instituição destacada (com posição) ou visão do conjunto.
+  const kpis = el("div", { class: "kpis" });
+  const posicao = (i) => {
+    const c = colunas[i]; const menor = sentido(c[2]) === "menor";
+    const vals = linhas.map((l) => l.valores[i]).filter((v) => !vazio(v)).sort((a, b) => menor ? a - b : b - a);
+    return vals;
+  };
+  if (estado.destaque !== "" && INST.has(Number(estado.destaque))) {
+    const id = Number(estado.destaque);
+    const linha = linhas.find((l) => l.inst.id === id) || { valores: colunas.map((c) => c[3](id)) };
+    const tile = (i, rotulo) => {
+      const v = linha.valores[i], vals = posicao(i);
+      const pos = vazio(v) ? null : vals.indexOf(v) + 1;
+      return el("div", { class: "kpi" }, [el("div", { class: "rotulo", text: rotulo }),
+        el("div", { class: "valor", text: vazio(v) ? "—" : formatar(colunas[i][2], v, true) }),
+        el("div", { class: "detalhe", text: pos ? `${pos}º de ${vals.length}${sentido(colunas[i][2]) === "volume" ? " (por volume)" : ""}` : "sem dado" })]);
+    };
+    kpis.append(tile(0, "App Store · nota"), tile(1, "Google Play · nota"), tile(3, "Consumidor.gov · solução"),
+      tile(4, "Consumidor.gov · satisfação"), tile(5, "Reclame Aqui · nota"), tile(7, "Instagram · seguidores"));
+    sec.append(el("h2", { text: `Resumo: ${INST.get(id).nome}`, style: { margin: "0 0 10px" } }), kpis);
+  } else {
+    const media = (i) => { const v = linhas.map((l) => l.valores[i]).filter((x) => !vazio(x)); return v.length ? v.reduce((a, x) => a + x, 0) / v.length : null; };
+    const soma = (i) => linhas.map((l) => l.valores[i]).filter((x) => !vazio(x)).reduce((a, x) => a + x, 0);
+    const tiles = [
+      ["Instituições no filtro", fmtInt.format(insts.length), `de ${INST.size} monitoradas`],
+      ["App Store · nota média", formatar("nota_media", media(0)), "média simples das instituições"],
+      ["Google Play · nota média", formatar("nota_media", media(1)), "média simples das instituições"],
+      ["Consumidor.gov · reclamações", formatar("total_reclamacoes", soma(2), true), "soma no ano"],
+      ["Consumidor.gov · solução", formatar("pct_resolvidas", media(3)), "média das instituições"],
+      ["Instagram · seguidores", formatar("seguidores", soma(7), true), "soma dos perfis"],
+    ];
+    for (const [r, v, d] of tiles) kpis.append(el("div", { class: "kpi" }, [el("div", { class: "rotulo", text: r }), el("div", { class: "valor", text: v }), el("div", { class: "detalhe", text: d })]));
+    sec.append(kpis);
   }
-  function ordenar(i) {
-    ordem = { coluna: i, desc: ordem.coluna === i ? !ordem.desc : i >= 0 };
-    linhas.sort((a, b) => {
-      const va = i < 0 ? a.inst.nome : a.valores[i], vb = i < 0 ? b.inst.nome : b.valores[i];
-      if (va === null || va === undefined) return 1;
-      if (vb === null || vb === undefined) return -1;
-      const r = typeof va === "number" ? va - vb : String(va).localeCompare(String(vb), "pt-BR");
-      return ordem.desc ? -r : r;
-    });
-    cabecalhos.forEach((th, k) => th.setAttribute("aria-sort", k - 1 === i ? (ordem.desc ? "descending" : "ascending") : "none"));
-    preencher();
-  }
-  preencher();
-  aoMudarDestaque(preencher);
-  sec.append(el("div", { class: "cartao" }, [
-    el("div", { class: "cartao-topo" }, [el("h2", { text: "Comparativo por instituição" })]),
-    el("div", { class: "rolagem" }, [el("table", {}, [el("thead", {}, [el("tr", {}, cabecalhos)]), corpo])]),
-    el("p", { class: "nota", text: "Clique no título de uma coluna para ordenar. Instituições com mais de um app ou perfil: notas das lojas são a média simples; solução e satisfação do Consumidor.gov são ponderadas pelo total de reclamações; contagens são somadas. Consumidor.gov: ano corrente; Reclame Aqui: últimos 6 meses; Instagram: posts do último mês inteiro." }),
-  ]));
+
+  // Comparativo
+  const chave = "comparativo";
+  const ordem = local[chave + ":ordem"] || { coluna: -1, desc: false };
+  linhas.sort((a, b) => {
+    const i = ordem.coluna;
+    const va = i < 0 ? a.inst.nome : a.valores[i], vb = i < 0 ? b.inst.nome : b.valores[i];
+    if (vazio(va)) return 1; if (vazio(vb)) return -1;
+    const r = typeof va === "number" ? va - vb : String(va).localeCompare(String(vb), "pt-BR");
+    return ordem.desc ? -r : r;
+  });
+  const clicar = (i) => { local[chave + ":ordem"] = { coluna: i, desc: ordem.coluna === i ? !ordem.desc : i >= 0 }; salvarEstado(); redesenhar(); };
+  const th = (i, filhos) => el("th", { scope: "col", "aria-sort": ordem.coluna === i ? (ordem.desc ? "descending" : "ascending") : "none" },
+    [el("button", { type: "button", onclick: () => clicar(i) }, filhos)]);
+  const janelas = [["consumidor_gov", "total_reclamacoes", "Consumidor.gov"], ["reclame_aqui", "total_reclamacoes", "Reclame Aqui"], ["instagram", "posts_periodo", "Instagram (posts)"]]
+    .map(([pl, m, n]) => { const r = [...PERFIS.values()].filter((p) => p.plat === pl).map((p) => vigente(p.id, m)).find((x) => x && x.ini);
+      return r ? `${n}: ${fmtData(r.ini)} – ${fmtData(r.fim)}` : null; }).filter(Boolean);
+  sec.append(cartao("Comparativo por instituição", el("div", { class: "sub", text: "Clique no título de uma coluna para ordenar." }), [],
+    el("div", { class: "rolagem" }, [el("table", {}, [
+      el("thead", {}, [el("tr", {}, [th(-1, ["Instituição"]), ...colunas.map(([g, n], i) => th(i, [el("span", { class: "grupo", text: g }), n]))])]),
+      el("tbody", {}, linhas.map((l) => el("tr", { class: ehDestaque(l.inst.id) ? "destaque" : null }, [el("td", { text: l.inst.nome }),
+        ...l.valores.map((v, i) => { const t = vazio(v) ? "—" : colunas[i][2] ? formatar(colunas[i][2], v) : v; return el("td", { class: t === "—" ? "vazio" : null, text: t }); })]))),
+    ])]),
+    "Janelas dos indicadores na data escolhida — " + (janelas.join(" · ") || "sem dados") +
+    ". Instituições com mais de um app ou perfil: notas das lojas são média simples; solução e satisfação do Consumidor.gov são ponderadas pelo total de reclamações; contagens são somadas."));
+
+  // Coletas
+  const nomes = { app_store: "App Store", google_play: "Google Play", consumidor_gov: "Consumidor.gov.br", reclame_aqui: "Reclame Aqui", instagram: "Instagram" };
+  const ultimas = new Map();
+  for (const [c, st, ini, fim, ok, erro, interrompida] of DADOS.execucoes) ultimas.set(c, { st, ini, fim, ok, erro, interrompida });
+  const geradoEm = Date.parse(DADOS.gerado_iso || new Date().toISOString());
+  const blocos = Object.entries(nomes).map(([c, nome]) => {
+    const e = ultimas.get(c);
+    const abandonada = e && e.st === "em_andamento" && geradoEm - Date.parse(e.ini) > 3 * 3600 * 1000;
+    const [cls, icone, txt] = !e ? ["nenhum", "–", "nunca rodou"]
+      : e.interrompida || abandonada ? ["critico", "✕", "interrompida"]
+      : e.st === "sucesso" ? ["bom", "✓", "sucesso"] : e.st === "parcial" ? ["atencao", "!", "parcial"]
+      : e.st === "erro" ? ["critico", "✕", "erro"] : ["nenhum", "…", "em andamento"];
+    return el("div", { class: "coleta" }, [el("div", { class: "rotulo", text: nome }), el("div", { class: "data", text: e ? fmtData(e.ini) + " " + e.ini.slice(11, 16) : "—" }),
+      el("div", { class: "status" }, [el("i", { class: cls, "aria-hidden": "true", text: icone }), txt]),
+      e && !(e.st === "em_andamento") ? el("div", { class: "meta", text: `${e.ok} ok · ${e.erro} com erro` }) : null]);
+  });
+  sec.append(cartao("Última coleta de cada fonte", el("div", { class: "sub", text: "Status operacional, independente do filtro de data." }), [],
+    el("div", { class: "coletas" }, blocos), "Detalhes dos erros: uv run monitor status."));
   return sec;
 }
 
 function secaoLojas() {
   return el("section", {}, [
-    cartaoBarras("App Store: nota média por app", "app_store", ["nota_media"], "Valor atual exibido na loja do Brasil."),
-    cartaoBarras("Google Play: nota média por app", "google_play", ["nota_media"], "Valor atual exibido na loja do Brasil."),
+    cartaoHalteres(),
+    el("div", { class: "grade-2" }, [
+      cartaoRanking("lojas-as", "App Store: nota por app", "app_store", ["nota_media"]),
+      cartaoRanking("lojas-gp", "Google Play: nota por app", "google_play", ["nota_media"]),
+    ]),
   ]);
 }
 
 function secaoConsumidor() {
-  return el("section", {}, [cartaoBarras("Consumidor.gov.br: indicadores do ano", "consumidor_gov",
-    ["total_reclamacoes", "pct_resolvidas", "nota_consumidor", "pct_respondidas", "tempo_resposta_dias"],
-    "Satisfação de 1 a 5. Fonte: aba do ano no perfil de cada empresa.")]);
+  return el("section", {}, [cartaoRanking("cgov", "Consumidor.gov.br: indicadores do ano", "consumidor_gov",
+    ["pct_resolvidas", "nota_consumidor", "pct_respondidas", "tempo_resposta_dias", "total_reclamacoes"],
+    "Fonte: aba do ano corrente no perfil de cada empresa. Satisfação de 1 a 5.")]);
 }
 
 function secaoReclameAqui() {
-  return el("section", {}, [cartaoBarras("Reclame Aqui: últimos 6 meses", "reclame_aqui",
-    ["nota_reclame_aqui", "total_reclamacoes", "pct_respondidas", "pct_resolvidas", "pct_voltaria_negocio",
-     "nota_consumidor", "tempo_resposta_dias", "reclamacoes_avaliadas", "aguardando_resposta"],
-    "Nota do consumidor de 0 a 10. Capturado pelo botão do navegador e importado à mão.",
-    (p, a) => {
-      const rep = valorAtual(p.id, "status_reputacao")?.texto;
-      return [["Reputação", rep || "—"]];
-    })]);
+  return el("section", {}, [cartaoRanking("ra", "Reclame Aqui: últimos 6 meses", "reclame_aqui",
+    ["nota_reclame_aqui", "pct_resolvidas", "pct_voltaria_negocio", "nota_consumidor", "pct_respondidas",
+     "tempo_resposta_dias", "total_reclamacoes", "reclamacoes_avaliadas", "aguardando_resposta"],
+    "Capturado pelo botão do navegador e importado à mão. Nota do consumidor de 0 a 10.",
+    (p) => [["Reputação", vigente(p.id, "status_reputacao")?.texto || "—"]])]);
 }
 
 function secaoInstagram() {
   const sec = el("section", {});
-  // Curtidas médias por post, por perfil, num mês escolhido.
-  const meses = [...new Set(DADOS.posts.map((p) => p[2]))].sort().reverse();
-  const nomeMes = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-  sec.append(cartaoBarras("Instagram: seguidores e posts", "instagram", ["seguidores", "posts_periodo"],
-    "Seguidores: valor atual. Posts: último mês inteiro."));
+  sec.append(cartaoRanking("ig-seg", "Instagram: seguidores", "instagram", ["seguidores"], "Valor na data da coleta."));
+  // Meses disponíveis até a data escolhida.
+  const limite = (estado.data || "9999").slice(0, 7);
+  const meses = [...new Set(DADOS.posts.map((p) => p[2].slice(0, 7)))].filter((m) => m <= limite).sort().reverse();
+  const chave = "ig-mes";
+  const mes = meses.includes(local[chave + ":mes"]) ? local[chave + ":mes"] : meses[0];
+  const metrica = local[chave + ":m"] || "curtidas_media";
+  const corte = local[chave + ":c"] || "todas";
+  const posts = DADOS.posts.filter((p) => p[2].slice(0, 7) === mes && PERFIS.has(p[0]) && visivel(PERFIS.get(p[0]).inst));
+  const itens = perfisDe("instagram").map((p) => {
+    const meus = posts.filter((x) => x[0] === p.id), vis = meus.filter((x) => x[3] !== null);
+    const total = vis.reduce((a, x) => a + x[3], 0);
+    const valor = metrica === "posts_mes" ? meus.length : metrica === "curtidas_total" ? (vis.length ? total : null) : (vis.length ? total / vis.length : null);
+    return { inst: p.inst, nome: nomePerfil(p, true), titulo: nomePerfil(p), valor,
+      extra: [["Posts no mês", fmtInt.format(meus.length)], ["Com curtidas ocultas", fmtInt.format(meus.length - vis.length)]] };
+  });
+  const mesTxt = mes ? nomeMes(mes) : "—";
+  const { corpo, botao } = alternavel(chave, () => meses.length ? graficoRanking(itens, metrica, { corte }) : el("p", { class: "vazio-grafico", text: "Ainda não há posts coletados." }),
+    () => tabelaRanking(itens, metrica, ["Posts no mês", "Com curtidas ocultas"]));
+  sec.append(cartao("Instagram: posts e curtidas", el("div", { class: "janela", text: `Mês: ${mesTxt}` }), [
+    seletor("Métrica", [["curtidas_media", "Curtidas médias por post"], ["curtidas_total", "Curtidas no mês"], ["posts_mes", "Posts no mês"]], metrica,
+      (v) => { local[chave + ":m"] = v; salvarEstado(); redesenhar(); }),
+    meses.length ? seletor("Mês", meses.map((m) => [m, nomeMes(m)]), mes, (v) => { local[chave + ":mes"] = v; salvarEstado(); redesenhar(); }) : null,
+    seletor("Mostrar", opcoesCorte(metrica), corte, (v) => { local[chave + ":c"] = v; salvarEstado(); redesenhar(); }), botao],
+    corpo, "Curtidas mais recentes coletadas de cada post. Perfis que escondem as curtidas ficam sem dado (nunca zero)."));
 
-  const cartao = el("div", { class: "cartao" });
-  const seletorMes = el("select", { "aria-label": "Mês" }, meses.map((m) => el("option", { value: m, text: nomeMes(m) })));
-  const seletorVisao = el("select", { "aria-label": "Visão" }, [
-    el("option", { value: "media", text: "Curtidas médias por post" }),
-    el("option", { value: "lista", text: "Posts mais curtidos" }),
-  ]);
-  const area = el("div");
-  const controles = el("div", { class: "controles" }, [seletorVisao, seletorMes]);
-  cartao.append(el("div", { class: "cartao-topo" }, [el("h2", { text: "Instagram: curtidas por mês" }), controles]), area,
-    el("p", { class: "nota", text: "Curtidas mais recentes coletadas de cada post. Perfis que escondem as curtidas aparecem como \"sem dado\" (nunca zero)." }));
-  const desenhar = () => {
-    if (!meses.length) { area.replaceChildren(el("p", { class: "vazio-grafico", text: "Ainda não há posts coletados." })); return; }
-    const posts = DADOS.posts.filter((p) => p[2] === seletorMes.value);
-    controles.querySelector("button")?.remove();
-    if (seletorVisao.value === "media") {
-      const itens = perfisDe("instagram").map((p) => {
-        const meus = posts.filter((x) => x[0] === p.id);
-        const visiveis = meus.filter((x) => x[3] !== null);
-        const media = visiveis.length ? visiveis.reduce((a, x) => a + x[3], 0) / visiveis.length : null;
-        return { perfil: p.id, inst: p.inst, nome: nomePerfil(p, true), titulo: nomePerfil(p), valor: media,
-                 extra: [["Posts no mês", fmtInt.format(meus.length)], ["Com curtidas ocultas", fmtInt.format(meus.length - visiveis.length)]] };
-      });
-      ROTULOS.curtidas_media = ["Curtidas médias por post", "contagem"];
-      const { caixa, botao } = alternavel(graficoBarras(itens, "curtidas_media"),
-        () => tabelaDeBarras(itens, "curtidas_media", ["Posts no mês", "Com curtidas ocultas"]));
-      controles.append(botao);
-      area.replaceChildren(caixa);
-    } else {
-      const top = [...posts].sort((a, b) => (b[3] ?? -1) - (a[3] ?? -1)).slice(0, 30);
-      const tabela = el("div", { class: "rolagem" }, [el("table", {}, [
-        el("thead", {}, [el("tr", {}, ["Perfil", "Data", "Tipo", "Curtidas", "Comentários", "Link"].map((c) => el("th", { scope: "col", text: c })))]),
-        el("tbody", {}, top.map(([perfil, data, , curtidas, ocultas, comentarios, tipo, link]) => {
-          const p = PERFIS.get(perfil);
-          const seguro = typeof link === "string" && link.startsWith("https://www.instagram.com/");
-          return el("tr", { class: destaque !== "" && p && String(p.inst) === destaque ? "destaque" : null }, [
-            el("td", { text: p ? nomePerfil(p, true) : "?" }), el("td", { text: fmtData(data) }),
-            el("td", { text: (tipo || "—").toLowerCase().replace("_", " ") }),
-            el("td", { class: curtidas === null ? "vazio" : null, text: curtidas === null ? (ocultas ? "ocultas" : "—") : fmtInt.format(curtidas) }),
-            el("td", { text: comentarios === null ? "—" : fmtInt.format(comentarios) }),
-            el("td", {}, [seguro ? el("a", { href: link, target: "_blank", rel: "noopener", text: "abrir" }) : "—"]),
-          ]);
-        })),
-      ])]);
-      area.replaceChildren(tabela);
-    }
-  };
-  seletorMes.addEventListener("change", desenhar);
-  seletorVisao.addEventListener("change", desenhar);
-  aoMudarDestaque(() => { if (seletorVisao.value === "lista") desenhar(); });
-  desenhar();
-  sec.append(cartao);
+  const top = [...posts].sort((a, b) => (b[3] ?? -1) - (a[3] ?? -1)).slice(0, 25);
+  sec.append(cartao("Posts mais curtidos do mês", el("div", { class: "janela", text: `Mês: ${mesTxt}` }), [],
+    top.length ? el("div", { class: "rolagem" }, [el("table", {}, [
+      el("thead", {}, [el("tr", {}, ["Perfil", "Data", "Tipo", "Curtidas", "Comentários", ""].map((c) => el("th", { scope: "col", text: c })))]),
+      el("tbody", {}, top.map(([perfil, data, , curtidas, ocultas, comentarios, tipo, link]) => {
+        const p = PERFIS.get(perfil);
+        const seguro = typeof link === "string" && link.startsWith("https://www.instagram.com/");
+        return el("tr", { class: p && ehDestaque(p.inst) ? "destaque" : null }, [
+          el("td", { text: p ? nomePerfil(p) : "?" }), el("td", { text: fmtData(data) }),
+          el("td", { text: ({ IMAGE: "imagem", VIDEO: "vídeo", CAROUSEL_ALBUM: "carrossel" })[tipo] || (tipo || "—").toLowerCase() }),
+          el("td", { class: curtidas === null ? "vazio" : null, text: curtidas === null ? (ocultas ? "ocultas" : "—") : fmtInt.format(curtidas) }),
+          el("td", { text: comentarios === null ? "—" : fmtInt.format(comentarios) }),
+          el("td", {}, [seguro ? el("a", { href: link, target: "_blank", rel: "noopener", text: "abrir ↗" }) : "—"]),
+        ]);
+      })),
+    ])]) : el("p", { class: "vazio-grafico", text: "Nenhum post neste mês para o filtro escolhido." })));
   return sec;
 }
 
 function secaoEvolucao() {
-  const sec = el("section", {});
-  const cartao = el("div", { class: "cartao" });
-  const historico = new Map();
-  for (const [perfil, metrica, data, valor] of DADOS.historico) {
-    const chave = perfil + "|" + metrica;
-    if (!historico.has(chave)) historico.set(chave, []);
-    historico.get(chave).push([data, valor]);
-  }
+  const chave = "evo";
   const plataformas = Object.keys(PLATAFORMAS).filter((pl) => perfisDe(pl).length);
-  const selPlat = el("select", { "aria-label": "Fonte" }, plataformas.map((pl) => el("option", { value: pl, text: PLATAFORMAS[pl] })));
-  const selMetrica = el("select", { "aria-label": "Métrica" });
-  const selPerfis = [0, 1, 2].map((i) => el("select", { "aria-label": `Perfil ${i + 1}` }));
-  const area = el("div");
-  const controles = el("div", { class: "controles" }, [selPlat, selMetrica]);
-  cartao.append(el("div", { class: "cartao-topo" }, [el("h2", { text: "Evolução no tempo" }), controles]),
-    el("div", { class: "controles", style: "margin-bottom:12px" }, [el("span", { class: "meta", style: "margin:0", text: "Comparar até 3:" }), ...selPerfis]),
-    area, el("p", { class: "nota", text: "Um ponto por coleta. Notas e percentuais não começam do zero: a escala acompanha os dados." }));
-  const preencherMetricas = () => {
-    const pl = selPlat.value;
-    const ids = new Set(perfisDe(pl).map((p) => p.id));
-    const codigos = [...new Set(DADOS.historico.filter(([p]) => ids.has(p)).map(([, m]) => m))];
-    selMetrica.replaceChildren(...codigos.map((m) => el("option", { value: m, text: rotuloMetrica(m) })));
-    const ps = perfisDe(pl).sort((a, b) => nomePerfil(a).localeCompare(nomePerfil(b), "pt-BR"));
-    const preferidos = destaque !== "" ? ps.filter((p) => String(p.inst) === destaque) : [];
-    selPerfis.forEach((sel, i) => {
-      sel.replaceChildren(el("option", { value: "", text: "—" }), ...ps.map((p) => el("option", { value: p.id, text: nomePerfil(p, true) })));
-      const escolhido = preferidos[i] || (i === 0 && !preferidos.length ? ps[0] : null);
-      sel.value = escolhido ? String(escolhido.id) : "";
-    });
-  };
-  const desenhar = () => {
-    const metrica = selMetrica.value;
-    const series = selPerfis.map((sel) => sel.value).filter(Boolean).map((id) => {
-      const p = PERFIS.get(Number(id));
-      return { nome: nomePerfil(p, true), pontos: historico.get(id + "|" + metrica) || [] };
-    });
-    controles.querySelector("button")?.remove();
-    if (!metrica || !series.length) { area.replaceChildren(el("p", { class: "vazio-grafico", text: "Escolha uma métrica e ao menos um perfil." })); return; }
-    const datas = [...new Set(series.flatMap((sr) => sr.pontos.map(([d]) => d)))].sort();
-    const { caixa, botao } = alternavel(graficoLinhas(series, metrica), () => tabelaSimples(
-      ["Data", ...series.map((sr) => sr.nome)],
-      datas.map((d) => ({ celulas: [fmtData(d), ...series.map((sr) => {
-        const p = sr.pontos.find(([dd]) => dd === d); return p ? formatar(metrica, p[1]) : "—"; })] }))));
-    controles.append(botao);
-    area.replaceChildren(caixa);
-  };
-  selPlat.addEventListener("change", () => { preencherMetricas(); desenhar(); });
-  selMetrica.addEventListener("change", desenhar);
-  selPerfis.forEach((sel) => sel.addEventListener("change", desenhar));
-  aoMudarDestaque(() => { preencherMetricas(); desenhar(); });
-  preencherMetricas();
-  desenhar();
-  sec.append(cartao);
-  return sec;
+  const plat = plataformas.includes(local[chave + ":p"]) ? local[chave + ":p"] : plataformas[0];
+  const ps = perfisDe(plat).sort((a, b) => nomePerfil(a).localeCompare(nomePerfil(b), "pt-BR"));
+  const codigos = [...new Set(DADOS.historico.filter(([p, , , v]) => PERFIS.get(p)?.plat === plat && !vazio(v)).map(([, m]) => m))];
+  const metrica = codigos.includes(local[chave + ":m"]) ? local[chave + ":m"] : codigos[0];
+  const de = local[chave + ":de"] && DATAS.includes(local[chave + ":de"]) ? local[chave + ":de"] : DATAS[DATAS.length - 1];
+  const ate = estado.data;
+  let escolhidos = (local[chave + ":perfis:" + plat] || []).filter((id) => ps.some((p) => p.id === id));
+  if (!escolhidos.length) {
+    const preferidos = estado.destaque !== "" ? ps.filter((p) => String(p.inst) === estado.destaque) : [];
+    escolhidos = (preferidos.length ? preferidos : ps.slice(0, 1)).slice(0, 3).map((p) => p.id);
+  }
+  const series = escolhidos.map((id) => ({ nome: nomePerfil(PERFIS.get(id), true),
+    pontos: (SERIES.get(id + "|" + metrica) || []).filter(([d, v]) => d >= de && d <= ate && !vazio(v)).map(([d, v]) => [d, v]) }));
+  const datas = [...new Set(series.flatMap((sr) => sr.pontos.map(([d]) => d)))].sort();
+  const { corpo, botao } = alternavel(chave, () => metrica ? graficoTempo(series, metrica, plat) : el("p", { class: "vazio-grafico", text: "Sem dados." }),
+    () => tabela(["Data", ...series.map((sr) => sr.nome)], datas.map((d) => ({ celulas: [fmtData(d),
+      ...series.map((sr) => { const p = sr.pontos.find(([dd]) => dd === d); return p ? formatar(metrica, p[1]) : "—"; })] }))));
+  const mudar = (k, v) => { local[chave + k] = v; salvarEstado(); redesenhar(); };
+  const selPerfil = (i) => seletor(`Perfil ${i + 1}`, [["", "—"], ...ps.map((p) => [String(p.id), nomePerfil(p, true)])], escolhidos[i] ? String(escolhidos[i]) : "",
+    (v) => { const novo = [...escolhidos]; if (v) novo[i] = Number(v); else novo.splice(i, 1); mudar(":perfis:" + plat, [...new Set(novo.filter(Boolean))]); });
+  return el("section", {}, [cartao("Evolução no tempo",
+    el("div", { class: "janela", text: `De ${fmtData(de)} até ${fmtData(ate)} (filtro "Dados até")` }), [
+      seletor("Fonte", plataformas.map((pl) => [pl, PLATAFORMAS[pl]]), plat, (v) => mudar(":p", v)),
+      metrica ? seletor("Métrica", codigos.map((m) => [m, rotuloMetrica(m)]), metrica, (v) => mudar(":m", v)) : null,
+      seletor("A partir de", [...DATAS].reverse().filter((d) => d <= ate).map((d) => [d, fmtData(d)]), de, (v) => mudar(":de", v)),
+      botao],
+    el("div", {}, [el("div", { class: "controles", style: { marginBottom: "12px" } }, [el("span", { class: "meta", text: "Comparar até 3:" }), selPerfil(0), selPerfil(1), selPerfil(2)]), corpo]),
+    "Um ponto por coleta. Notas e percentuais não começam do zero: a escala acompanha os dados, com uma amplitude mínima para variações pequenas não parecerem grandes.")]);
 }
 
-// ---------------------------------------------------------------- montagem
-document.getElementById("meta").textContent =
-  `Dados de ${DADOS.origem} · página gerada em ${DADOS.gerado_em} · ${INST.size} instituições`;
-const selDestaque = document.getElementById("destaque");
-for (const inst of INST.values()) selDestaque.append(el("option", { value: inst.id, text: inst.nome }));
-selDestaque.addEventListener("change", () => {
-  destaque = selDestaque.value;
-  try { localStorage.setItem("painel-destaque", destaque); } catch (e) { /* sem armazenamento */ }
-  ouvintesDestaque.forEach((fn) => fn());
-});
-try { const salvo = localStorage.getItem("painel-destaque"); if (salvo && INST.has(Number(salvo))) { destaque = salvo; selDestaque.value = salvo; } } catch (e) { /* ok */ }
+// ================================================================ filtros globais
+function montarFiltros() {
+  const caixa = document.getElementById("filtros");
+  const selData = seletor("Dados até", DATAS.map((d, i) => [d, fmtData(d) + (i === 0 ? " (mais recente)" : "")]), estado.data || "",
+    (v) => { estado.data = v; redesenhar(); });
+  // Instituições (multi)
+  const resumo = el("summary");
+  const atualizarResumo = () => { resumo.textContent = estado.selecionadas.size === INST.size ? `Todas (${INST.size})` : `${estado.selecionadas.size} de ${INST.size}`; };
+  const busca = el("input", { type: "search", placeholder: "Buscar…", "aria-label": "Buscar instituição" });
+  const lista = el("div", { class: "lista" });
+  const caixas = [...INST.values()].map((i) => {
+    const cb = el("input", { type: "checkbox", value: i.id });
+    cb.checked = estado.selecionadas.has(i.id);
+    cb.addEventListener("change", () => { if (cb.checked) estado.selecionadas.add(i.id); else estado.selecionadas.delete(i.id); atualizarResumo(); salvarEstado(); redesenhar(); });
+    const rotulo = el("label", {}, [cb, i.nome]); lista.append(rotulo);
+    return [i, cb, rotulo];
+  });
+  busca.addEventListener("input", () => { const q = busca.value.toLowerCase(); caixas.forEach(([i, , r]) => { r.hidden = !i.nome.toLowerCase().includes(q); }); });
+  const todas = (marcar) => { caixas.forEach(([i, cb]) => { cb.checked = marcar; if (marcar) estado.selecionadas.add(i.id); else estado.selecionadas.delete(i.id); }); atualizarResumo(); salvarEstado(); redesenhar(); };
+  const multi = el("details", { class: "multi" }, [resumo, el("div", { class: "painel-multi" }, [busca,
+    el("div", { class: "acoes" }, [el("button", { type: "button", text: "Todas", onclick: () => todas(true) }), el("button", { type: "button", text: "Nenhuma", onclick: () => todas(false) })]), lista])]);
+  document.addEventListener("click", (e) => { if (!multi.contains(e.target)) multi.open = false; });
+  atualizarResumo();
+  const selDestaque = seletor("Destacar", [["", "Nenhuma"], ...[...INST.values()].map((i) => [String(i.id), i.nome])], estado.destaque,
+    (v) => { estado.destaque = v; salvarEstado(); redesenhar(); });
+  const tema = el("button", { type: "button", class: "botao-icone", title: "Alternar tema claro/escuro", "aria-label": "Alternar tema", text: "◐",
+    onclick: () => {
+      const atual = document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      const novo = atual === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = novo;
+      try { localStorage.setItem("painel-tema", novo); } catch (e) { /* ok */ }
+      redesenhar();
+    } });
+  caixa.replaceChildren(
+    el("label", { class: "campo" }, [el("span", { text: "Dados até" }), selData]),
+    el("div", { class: "campo" }, [el("span", { text: "Instituições" }), multi]),
+    el("label", { class: "campo" }, [el("span", { text: "Destacar" }), selDestaque]),
+    el("div", { class: "campo" }, [el("span", { text: "Tema" }), tema]),
+  );
+}
 
-const SECOES = [
-  ["Visão geral", secaoVisaoGeral], ["Lojas de apps", secaoLojas], ["Consumidor.gov.br", secaoConsumidor],
-  ["Reclame Aqui", secaoReclameAqui], ["Instagram", secaoInstagram], ["Evolução", secaoEvolucao],
-];
+// ================================================================ montagem
+document.getElementById("meta").textContent = `Dados de ${DADOS.origem} · página gerada em ${DADOS.gerado_em}`;
+const SECOES = [["Visão geral", secaoVisaoGeral], ["Lojas de apps", secaoLojas], ["Consumidor.gov.br", secaoConsumidor],
+  ["Reclame Aqui", secaoReclameAqui], ["Instagram", secaoInstagram], ["Evolução", secaoEvolucao]];
 const abas = document.getElementById("abas");
 const conteudo = document.getElementById("conteudo");
-const montadas = new Map();
-function abrir(i) {
-  [...abas.children].forEach((b, k) => b.setAttribute("aria-selected", String(k === i)));
-  if (!montadas.has(i)) { const sec = SECOES[i][1](); sec.setAttribute("role", "tabpanel"); montadas.set(i, sec); conteudo.append(sec); }
-  for (const [k, sec] of montadas) sec.hidden = k !== i;
-  try { localStorage.setItem("painel-aba", String(i)); } catch (e) { /* ok */ }
+SECOES.forEach(([nome], i) => abas.append(el("button", { type: "button", role: "tab", "aria-selected": "false", text: nome,
+  onclick: () => { estado.aba = i; salvarEstado(); redesenhar(); } })));
+function redesenhar() {
+  esconderDica();
+  estado.aba = Math.min(Math.max(0, estado.aba), SECOES.length - 1);
+  [...abas.children].forEach((b, k) => b.setAttribute("aria-selected", String(k === estado.aba)));
+  const rolagem = window.scrollY;
+  const sec = SECOES[estado.aba][1]();
+  sec.setAttribute("role", "tabpanel");
+  conteudo.replaceChildren(sec);
+  window.scrollTo(0, rolagem);
 }
-SECOES.forEach(([nome], i) => abas.append(el("button", { type: "button", role: "tab", "aria-selected": "false", text: nome, onclick: () => abrir(i) })));
-// Aba inicial: #aba=N no endereço, senão a última aberta.
-let inicial = 0;
-const pedida = /aba=(\d)/.exec(location.hash);
-try { inicial = Math.min(SECOES.length - 1, Number(pedida ? pedida[1] : localStorage.getItem("painel-aba")) || 0); } catch (e) { /* ok */ }
-abrir(inicial);
+montarFiltros();
+if (!DATAS.length) conteudo.append(el("p", { class: "vazio-grafico", text: "O banco ainda não tem coletas." }));
+redesenhar();
 </script>
 </body>
 </html>

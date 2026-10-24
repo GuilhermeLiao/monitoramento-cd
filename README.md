@@ -266,10 +266,23 @@ uv run monitor painel --no-abrir
 ```
 
 A página é um arquivo HTML autocontido (funciona sem internet), com abas de
-visão geral (última coleta de cada fonte e comparativo por instituição), lojas,
-Consumidor.gov.br, Reclame Aqui, Instagram (seguidores, posts e curtidas por mês)
-e evolução no tempo. O filtro "Destacar instituição" vale para todas as abas, e
-cada gráfico tem o botão "Ver tabela". Para atualizar, rode o comando de novo.
+visão geral (resumo, comparativo por instituição e última coleta de cada fonte),
+lojas (App Store × Google Play e nota por app), Consumidor.gov.br, Reclame Aqui,
+Instagram (seguidores, posts e curtidas por mês, posts mais curtidos) e evolução
+no tempo. Para atualizar, rode o comando de novo.
+
+Filtros no topo, válidos para todas as abas:
+
+- **Dados até**: mostra os valores vigentes em uma data de coleta (o último
+  levantamento até ela). Cada gráfico mostra a janela do indicador (por exemplo,
+  "Janela 01/01/2026 – 24/10/2026 · coleta de 24/10/2026").
+- **Instituições**: escolhe quais aparecem.
+- **Destacar**: realça uma instituição em todos os gráficos e mostra o resumo
+  dela, com a posição em cada indicador.
+- **Tema**: claro ou escuro.
+
+Cada gráfico tem "Mostrar" (todas, 10 melhores, 10 piores) e "Ver tabela". As
+escolhas ficam salvas no navegador.
 
 O painel lê o banco de `PAINEL_DATABASE_URL`; sem ela, usa a `DATABASE_URL` do
 `.env` (dev). O topo da página diz de onde vieram os dados. Para ler a produção

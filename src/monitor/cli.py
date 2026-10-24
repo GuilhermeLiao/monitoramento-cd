@@ -148,7 +148,7 @@ def painel(
     saida.write_text(gerar_html(dados, origem), encoding="utf-8")
     typer.echo(
         f"Painel gerado em {saida.resolve()} com dados de {origem} "
-        f"({len(dados['atuais'])} valores atuais, {len(dados['posts'])} posts)."
+        f"({len(dados['historico'])} valores coletados, {len(dados['posts'])} posts)."
     )
     if abrir:
         webbrowser.open(saida.resolve().as_uri())
@@ -198,8 +198,9 @@ def status(
         return
     for e in execucoes:
         inicio = e.iniciado_em.astimezone(FUSO_REFERENCIA).strftime("%d/%m/%Y %H:%M")
+        situacao = "interrompida" if e.detalhes.get("interrompida") else e.status
         typer.echo(
-            f"#{e.id}  {inicio}  {e.coletor:<16} {e.status:<13} "
+            f"#{e.id}  {inicio}  {e.coletor:<16} {situacao:<13} "
             f"ok={e.perfis_ok} erro={e.perfis_erro}"
         )
         for erro in e.detalhes.get("erros", []):

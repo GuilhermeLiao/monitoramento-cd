@@ -13,8 +13,6 @@ from monitor.db.session import criar_engine
 from monitor.settings import FUSO_REFERENCIA, Settings, get_settings
 
 MODELO = Path(__file__).parent / "ferramentas" / "painel.html"
-# Posts do Instagram embutidos na página: os dos últimos meses completos.
-MESES_DE_POSTS = 3
 
 
 def engine_do_painel(settings: Settings | None = None) -> tuple[Engine, str]:
@@ -48,7 +46,7 @@ def carregar_dados(engine: Engine) -> dict[str, Any]:
         conexao.execute(text("SET TRANSACTION READ ONLY"))
         instituicoes = _linhas(
             conexao,
-            "SELECT id, nome, nome_curto FROM instituicoes WHERE ativo ORDER BY nome",
+            "SELECT id, nome, nome_curto, segmento FROM instituicoes WHERE ativo ORDER BY nome",
         )
         perfis = _linhas(
             conexao,
@@ -57,41 +55,35 @@ def carregar_dados(engine: Engine) -> dict[str, Any]:
                WHERE p.ativo AND i.ativo ORDER BY p.id""",
         )
         metricas = _linhas(conexao, "SELECT codigo, descricao, unidade FROM metricas")
-        atuais = _linhas(
-            conexao,
-            """SELECT perfil_id, metrica_codigo, valor, valor_texto, data_referencia,
-                      periodo_inicio, periodo_fim
-               FROM vw_metricas_atuais""",
-        )
+        # Todos os snapshots: a página escolhe o valor vigente em qualquer data.
         historico = _linhas(
             conexao,
-            """SELECT s.perfil_id, s.metrica_codigo, s.data_referencia, s.valor
+            """SELECT s.perfil_id, s.metrica_codigo, s.data_referencia, s.valor, s.valor_texto,
+                      s.periodo_inicio, s.periodo_fim
                FROM snapshots_metricas s
                JOIN perfis p ON p.id = s.perfil_id AND p.ativo
-               WHERE s.valor IS NOT NULL
-               ORDER BY s.data_referencia""",
+               JOIN instituicoes i ON i.id = p.instituicao_id AND i.ativo
+               ORDER BY s.data_referencia, s.coletado_em""",
         )
         posts = _linhas(
             conexao,
             """SELECT perfil_id, data_publicacao, mes_publicacao, curtidas, curtidas_ocultas,
                       comentarios, tipo_midia, permalink
-               FROM vw_instagram_posts
-               WHERE mes_publicacao >= date_trunc('month', current_date)
-                                       - make_interval(months => :meses)
-               ORDER BY data_publicacao""",
-            meses=MESES_DE_POSTS,
+               FROM vw_instagram_posts ORDER BY data_publicacao""",
         )
         execucoes = _linhas(
             conexao,
-            """SELECT DISTINCT ON (coletor) coletor, status, iniciado_em, perfis_ok, perfis_erro
-               FROM execucoes ORDER BY coletor, iniciado_em DESC""",
+            """SELECT coletor, status, iniciado_em, finalizado_em, perfis_ok, perfis_erro,
+                      coalesce((detalhes->>'interrompida')::boolean, false)
+               FROM execucoes ORDER BY iniciado_em""",
         )
+    agora = datetime.now(FUSO_REFERENCIA)
     return {
-        "gerado_em": datetime.now(FUSO_REFERENCIA).strftime("%d/%m/%Y %H:%M"),
+        "gerado_em": agora.strftime("%d/%m/%Y %H:%M"),
+        "gerado_iso": agora.isoformat(timespec="minutes"),
         "instituicoes": instituicoes,
         "perfis": perfis,
         "metricas": metricas,
-        "atuais": atuais,
         "historico": historico,
         "posts": posts,
         "execucoes": execucoes,

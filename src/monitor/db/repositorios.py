@@ -110,7 +110,31 @@ def perfis_ativos(sessao: Session, plataforma: str) -> list[PerfilAlvo]:
 # ------------------------------------------------------------------- execuções
 
 
+HORAS_PARA_INTERROMPIDA = 3
+
+
+def marcar_interrompidas(sessao: Session, coletor: str) -> int:
+    """Execuções que ficaram "em_andamento" por horas foram abandonadas (processo
+    morto, terminal fechado): viram erro com a marca `interrompida`."""
+    limite = datetime.now(UTC) - timedelta(hours=HORAS_PARA_INTERROMPIDA)
+    resultado = sessao.execute(
+        update(Execucao)
+        .where(
+            Execucao.coletor == coletor,
+            Execucao.status == "em_andamento",
+            Execucao.iniciado_em < limite,
+        )
+        .values(
+            status="erro",
+            finalizado_em=datetime.now(UTC),
+            detalhes={"erros": [], "interrompida": True},
+        )
+    )
+    return resultado.rowcount or 0
+
+
 def abrir_execucao(sessao: Session, coletor: str) -> int:
+    marcar_interrompidas(sessao, coletor)
     execucao = Execucao(coletor=coletor, status="em_andamento")
     sessao.add(execucao)
     sessao.flush()

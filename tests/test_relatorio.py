@@ -64,8 +64,8 @@ def test_instagram_usa_a_janela_de_cada_levantamento():
     rel = montar_relatorio(_dados(), "2026-10")
     (linha,) = next(t for t in rel.tabelas if t.id == "instagram").linhas
     # Outubro: posts de setembro (2, um com curtidas ocultas); setembro: posts de agosto.
-    assert linha.valores == [1100, 2, 100, 100, 1]
-    assert linha.anteriores == [1000, 1, 30, 30, 0]
+    assert linha.valores == [1100, 2, 100, 100]
+    assert linha.anteriores == [1000, 1, 30, 30]
     assert [p["curtidas"] for p in rel.top_posts] == [100, None]
 
 
@@ -109,6 +109,16 @@ def test_excel_tem_abas_formulas_e_graficos(tmp_path):
     assert 0.825 in valores and 0.8 in valores  # percentual guardado como fração
     assert any(isinstance(v, str) and v.startswith("=IF(OR(") and "*100" in v for v in valores)
     assert len(wb["Lojas"]._charts) == 1 and len(wb["Instagram"]._charts) == 1
+
+
+def test_lojas_em_tabela_com_media_e_diferenca():
+    rel = montar_relatorio(_dados(), "2026-10")
+    lojas = next(t for t in rel.tabelas if t.id == "lojas")
+    assert [c.titulo for c in lojas.colunas] == ["App Store", "Google Play", "Média das lojas", "Diferença (AS − GP)"]
+    a = next(l for l in lojas.linhas if l.rotulo == "Banco A")
+    assert a.valores[:3] == [4.7, 3.9, pytest.approx(4.3)] and a.valores[3] == pytest.approx(0.8)
+    assert lojas.linhas[0].rotulo == "Banco A"  # ordenado pela média das lojas
+    assert "<svg" not in montar_html(rel)
 
 
 def test_html_do_pdf_escapa_textos_e_mostra_variacao():

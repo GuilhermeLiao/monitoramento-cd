@@ -100,6 +100,8 @@ def fmt_data(d: date | None) -> str:
 
 
 def _br(numero: float, casas: int) -> str:
+    if round(numero, casas) == 0:
+        numero = 0.0  # evita "-0,00"
     return f"{numero:,.{casas}f}".replace(",", "§").replace(".", ",").replace("§", ".")
 
 
@@ -282,19 +284,27 @@ def montar_relatorio(dados: dict[str, Any], mes: str | None = None, origem: str 
     )
 
     # Lojas por instituição (para a tabela e o gráfico de halteres)
+    def notas_lojas(inst_id: int, ate: date | None) -> list[float | None]:
+        a = base.agregado("app_store", "nota_media", inst_id, ate)
+        g = base.agregado("google_play", "nota_media", inst_id, ate)
+        ambos = [v for v in (a, g) if v is not None]
+        media_lojas = sum(ambos) / len(ambos) if ambos else None
+        return [a, g, media_lojas, a - g if a is not None and g is not None else None]
+
     lojas_linhas, grafico = [], []
     for i in base.instituicoes():
-        a = base.agregado("app_store", "nota_media", i["id"], ref)
-        g = base.agregado("google_play", "nota_media", i["id"], ref)
-        a0 = base.agregado("app_store", "nota_media", i["id"], ant)
-        g0 = base.agregado("google_play", "nota_media", i["id"], ant)
-        lojas_linhas.append(Linha(i["nome"], i["nome"], [a, g], [a0, g0]))
-        grafico.append((i["nome"], a, g))
-    lojas = Tabela("lojas", "Lojas de apps", [Coluna("App Store", "nota", escala=5),
-                                               Coluna("Google Play", "nota", escala=5)],
+        atual, anterior = notas_lojas(i["id"], ref), notas_lojas(i["id"], ant)
+        lojas_linhas.append(Linha(i["nome"], i["nome"], atual, anterior))
+        grafico.append((i["nome"], atual[0], atual[1]))
+    # Ordem: melhor média primeiro (é a leitura do antigo gráfico de halteres).
+    lojas_linhas.sort(key=lambda l: (l.valores[2] is None, -(l.valores[2] or 0), l.rotulo.casefold()))
+    lojas = Tabela("lojas", "App Store × Google Play",
+                   [Coluna("App Store", "nota", escala=5), Coluna("Google Play", "nota", escala=5),
+                    Coluna("Média das lojas", "nota", escala=5), Coluna("Diferença (AS − GP)", "nota", "volume")],
                    lojas_linhas, janela=base.janela("app_store", "nota_media", ref),
                    janela_anterior=base.janela("app_store", "nota_media", ant),
-                   nota="Nota média exibida na loja do Brasil (média dos apps quando a instituição tem mais de um).")
+                   nota="Nota média exibida na loja do Brasil (média dos apps quando a instituição tem mais de um), "
+                        "ordenada pela média das duas lojas. Diferença positiva: App Store melhor avaliada que o Google Play.")
     lojas_apps = Tabela(
         "lojas_apps", "Lojas de apps por app",
         [Coluna("App Store", "nota", escala=5), Coluna("Google Play", "nota", escala=5)],
@@ -340,14 +350,12 @@ def montar_relatorio(dados: dict[str, Any], mes: str | None = None, origem: str 
             janela.valor if janela else None,
             sum(visiveis) if visiveis else None,
             sum(visiveis) / len(visiveis) if visiveis else None,
-            len(posts) - len(visiveis) if posts else None,
         ]
 
     instagram = Tabela(
         "instagram", "Instagram",
         [Coluna("Seguidores", "contagem"), Coluna("Posts no mês", "contagem", "volume"),
-         Coluna("Curtidas no mês", "contagem"), Coluna("Curtidas por post", "contagem"),
-         Coluna("Posts com curtidas ocultas", "contagem", "volume")],
+         Coluna("Curtidas no mês", "contagem"), Coluna("Curtidas por post", "contagem")],
         [Linha(base.nome_perfil(p) + f" (@{p['ident']})", base.nome_inst(p["inst"]),
                numeros_ig(p["id"], ref), numeros_ig(p["id"], ant)) for p in base.perfis_de("instagram")],
         janela=base.janela("instagram", "posts_periodo", ref),

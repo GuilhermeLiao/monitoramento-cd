@@ -288,6 +288,7 @@ const ROTULOS = {
   curtidas_media: ["Curtidas médias por post", "contagem", "maior"],
   curtidas_total: ["Curtidas no mês", "contagem", "maior"],
   posts_mes: ["Posts no mês", "contagem", "volume"],
+  diferenca_lojas: ["Diferença (AS − GP)", "nota", "volume"],
 };
 const fmtInt = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
 const fmtCompacto = new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 });
@@ -298,6 +299,7 @@ const vazio = (v) => v === null || v === undefined || Number.isNaN(v);
 function formatar(metrica, v, compacto) {
   if (vazio(v)) return "—";
   const tipo = (ROTULOS[metrica] || [, "dec"])[1];
+  if (Math.abs(v) < 0.005) v = 0; // evita "-0,00"
   if (tipo === "contagem") return compacto && v >= 10000 ? fmtCompacto.format(v) : fmtInt.format(v);
   if (tipo === "pct") return fmtDec(1).format(v) + "%";
   if (tipo === "dias") return fmtDec(1).format(v) + " d";
@@ -594,61 +596,6 @@ function cartaoRanking(chave, titulo, plataforma, metricas, rodape, extrasFn) {
   return cartao(titulo, janela(registro), controles, corpo, notas.join(" "));
 }
 
-// ================================================================ halteres (App Store x Google Play)
-function cartaoHalteres() {
-  const chave = "lojas-haltere";
-  const corte = local[chave + ":c"] || "todas";
-  const media = (plat, inst) => {
-    const vals = perfisDe(plat).filter((p) => p.inst === inst).map((p) => vigente(p.id, "nota_media")?.valor).filter((v) => !vazio(v));
-    return vals.length ? vals.reduce((a, v) => a + v, 0) / vals.length : null;
-  };
-  const itens = [...INST.values()].filter((i) => visivel(i.id)).map((i) => {
-    const a = media("app_store", i.id), g = media("google_play", i.id);
-    const ambos = [a, g].filter((v) => !vazio(v));
-    return { inst: i.id, nome: i.nome, a, g, valor: ambos.length ? ambos.reduce((x, v) => x + v, 0) / ambos.length : null };
-  });
-  const { com, sem } = ordenar(itens, "nota_media");
-  const registro = perfisDe("app_store").map((p) => vigente(p.id, "nota_media")).find((r) => r);
-  const grafico = () => {
-    if (!com.length) return el("p", { class: "vazio-grafico", text: "Ainda não há notas das lojas." });
-    const todos = com.flatMap((i) => [i.a, i.g]).filter((v) => !vazio(v));
-    const x1 = 5, x0 = Math.max(1, Math.floor((Math.min(...todos) - 0.05) * 2) / 2);
-    const pos = (v) => (v - x0) / (x1 - x0) * 100;
-    const passos = []; for (let v = x0; v <= x1 + 1e-9; v += (x1 - x0) > 2 ? 1 : 0.5) passos.push(v);
-    const caixa = el("div", { class: "linhas" + (estado.destaque !== "" ? " com-destaque" : ""), role: "list" });
-    caixa.append(el("div", { class: "legenda" }, [el("span", {}, [el("i", { style: { background: "var(--serie-1)" } }), "App Store"]),
-      el("span", {}, [el("i", { style: { background: "var(--serie-2)" } }), "Google Play"])]));
-    caixa.append(el("div", { class: "eixo-topo", "aria-hidden": "true" }, [el("span"), el("div", { class: "escala" },
-      passos.map((v) => el("span", { style: { left: pos(v) + "%" }, text: fmtDec(v % 1 ? 1 : 0).format(v) }))), el("span")]));
-    for (const i of [...cortar(com, corte), ...(corte === "todas" ? sem : [])]) {
-      const area = el("div", { class: "area" });
-      passos.forEach((v) => area.append(el("span", { class: "grade-v", style: { left: pos(v) + "%" } })));
-      if (!vazio(i.a) && !vazio(i.g)) {
-        const l = Math.min(pos(i.a), pos(i.g)), r = Math.max(pos(i.a), pos(i.g));
-        area.append(el("span", { class: "haste", style: { left: l + "%", width: (r - l) + "%" } }));
-      }
-      if (!vazio(i.a)) area.append(el("span", { class: "ponto", style: { left: pos(i.a) + "%" } }));
-      if (!vazio(i.g)) area.append(el("span", { class: "ponto s2", style: { left: pos(i.g) + "%" } }));
-      const dif = !vazio(i.a) && !vazio(i.g) ? i.a - i.g : null;
-      const linha = el("div", { class: "linha" + (ehDestaque(i.inst) ? " destaque" : ""), role: "listitem", tabindex: "0",
-        "aria-label": `${i.nome}: App Store ${formatar("nota_media", i.a)}, Google Play ${formatar("nota_media", i.g)}` }, [
-        el("span", { class: "nome", text: i.nome }), area,
-        el("span", { class: "valor" + (vazio(i.valor) ? " vazio" : ""), text: vazio(i.valor) ? "sem dado" : formatar("nota_media", i.valor) }),
-      ]);
-      comDica(linha, i.nome, [["App Store", formatar("nota_media", i.a)], ["Google Play", formatar("nota_media", i.g)],
-        ["Diferença", dif === null ? "—" : (dif > 0 ? "+" : "") + fmtDec(2).format(dif)], ...(i.posicao ? [["Posição (média)", `${i.posicao}º de ${com.length}`]] : [])]);
-      caixa.append(linha);
-    }
-    return caixa;
-  };
-  const { corpo, botao } = alternavel(chave, grafico, () => tabela(["#", "Instituição", "App Store", "Google Play", "Média"],
-    [...com, ...sem].map((i) => ({ destaque: ehDestaque(i.inst), celulas: [i.posicao ? String(i.posicao) : "—", i.nome,
-      formatar("nota_media", i.a), formatar("nota_media", i.g), formatar("nota_media", i.valor)] }))));
-  return cartao("App Store × Google Play", janela(registro), [
-    seletor("Mostrar", opcoesCorte("nota_media"), corte, (v) => { local[chave + ":c"] = v; salvarEstado(); redesenhar(); }), botao],
-    corpo, "Nota média por instituição em cada loja (média dos apps quando há mais de um), ordenada pela média das duas. Valor atual exibido na loja do Brasil.");
-}
-
 // ================================================================ linhas no tempo
 const CORES = ["var(--serie-1)", "var(--serie-2)", "var(--serie-3)"];
 function graficoTempo(series, metrica, plataforma) {
@@ -809,9 +756,34 @@ function secaoVisaoGeral() {
   return sec;
 }
 
+// App Store × Google Play por instituição, em tabela (ordenada pela média das lojas).
+function cartaoLojasTabela() {
+  const chave = "lojas-tab";
+  if (!local[chave + ":ordem"]) local[chave + ":ordem"] = { coluna: 2, desc: true };
+  const media = (plat, inst, data) => {
+    const vals = [...PERFIS.values()].filter((p) => p.plat === plat && p.inst === inst)
+      .map((p) => vigente(p.id, "nota_media", data)?.valor).filter((v) => !vazio(v));
+    return vals.length ? vals.reduce((a, v) => a + v, 0) / vals.length : null;
+  };
+  const notas = (l, data) => {
+    const a = media("app_store", l.inst, data), g = media("google_play", l.inst, data);
+    const ambos = [a, g].filter((v) => !vazio(v));
+    return { a, g, m: ambos.length ? ambos.reduce((x, v) => x + v, 0) / ambos.length : null, d: !vazio(a) && !vazio(g) ? a - g : null };
+  };
+  const linhas = [...INST.values()].filter((i) => visivel(i.id)).map((i) => ({ id: i.id, inst: i.id, nome: i.nome }));
+  const { tabela, csv } = tabelaIndicadores(chave, linhas, [
+    { titulo: "App Store", metrica: "nota_media", valor: (l, d) => notas(l, d).a },
+    { titulo: "Google Play", metrica: "nota_media", valor: (l, d) => notas(l, d).g },
+    { titulo: "Média das lojas", metrica: "nota_media", valor: (l, d) => notas(l, d).m },
+    { titulo: "Diferença (AS − GP)", metrica: "diferenca_lojas", valor: (l, d) => notas(l, d).d },
+  ], "app-store-x-google-play", "Instituição");
+  return cartao("App Store × Google Play", el("div", {}, [janelaDe("app_store", "nota_media"), " ", legendaComparacao()]), [csv], tabela,
+    "Nota média exibida na loja do Brasil (média dos apps quando a instituição tem mais de um). Diferença positiva: App Store melhor avaliada que o Google Play. Clique no título de uma coluna para ordenar.");
+}
+
 function secaoLojas() {
   return el("section", {}, [
-    cartaoHalteres(),
+    cartaoLojasTabela(),
     el("div", { class: "grade-2" }, [
       cartaoRanking("lojas-as", "App Store: nota por app", "app_store", ["nota_media"]),
       cartaoRanking("lojas-gp", "Google Play: nota por app", "google_play", ["nota_media"]),
@@ -876,7 +848,6 @@ function secaoInstagram() {
     { titulo: "Posts no mês", metrica: "posts_mes", valor: (l, d) => { const p = postsDaJanela(l.id, d); return p ? p.length : null; } },
     { titulo: "Curtidas no mês", metrica: "curtidas_total", valor: (l, d) => { const c = curtidas(postsDaJanela(l.id, d)); return c.length ? c.reduce((a, x) => a + x, 0) : null; } },
     { titulo: "Curtidas por post", metrica: "curtidas_media", valor: (l, d) => { const c = curtidas(postsDaJanela(l.id, d)); return c.length ? c.reduce((a, x) => a + x, 0) / c.length : null; } },
-    { titulo: "Curtidas ocultas", metrica: "posts_mes", valor: (l, d) => { const p = postsDaJanela(l.id, d); return p && p.length ? p.filter((x) => x[3] === null).length : null; } },
   ], "Seguidores na data da coleta. Posts e curtidas do último mês inteiro antes da coleta (a janela aparece acima). Curtidas ocultas não entram nas somas.",
   perfisDe("instagram").map((p) => ({ id: p.id, inst: p.inst, nome: nomePerfil(p) }))));
 

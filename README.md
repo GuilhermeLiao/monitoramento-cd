@@ -303,10 +303,11 @@ uv run monitor relatorio --formato xlsx      # só o Excel
 
 Gera em `relatorios/` (fora do Git):
 
-- `relatorio_AAAA-MM.pdf`: A4 deitado, com capa e indicadores-chave, resumo por
-  instituição, gráfico App Store × Google Play, tabelas de lojas, Consumidor.gov.br,
-  Reclame Aqui e Instagram, e os posts mais curtidos. Cada valor traz a variação
-  em relação ao mês anterior. Usa o Edge ou o Chrome instalados para gerar o PDF
+- `relatorio_AAAA-MM.pdf`: A4 deitado, com capa e indicadores-chave e uma tabela
+  por página (cada uma é reduzida para caber inteira): resumo por instituição,
+  App Store × Google Play (notas, média e diferença), Consumidor.gov.br, Reclame
+  Aqui, Instagram e os posts mais curtidos. Cada valor traz ao lado a variação em
+  relação ao mês anterior. Usa o Edge ou o Chrome instalados para gerar o PDF
   (defina `NAVEGADOR_PDF` se estiverem em outro caminho).
 - `relatorio_AAAA-MM.xlsx`: uma aba por fonte com colunas atual, mês anterior e
   variação (fórmula, colorida), gráficos nativos (lojas e seguidores), posts do

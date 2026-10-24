@@ -39,7 +39,7 @@ def localizar_navegador() -> str:
 
 
 ESTILO = """
-@page { size: A4 landscape; margin: 14mm 14mm 16mm;
+@page { size: A4 landscape; margin: 10mm 12mm 13mm;
   @bottom-left { content: "Monitor de reputação digital"; font: 8pt Arial, sans-serif; color: #8a93a3; }
   @bottom-right { content: "Página " counter(page) " de " counter(pages); font: 8pt Arial, sans-serif; color: #8a93a3; } }
 * { box-sizing: border-box; }
@@ -55,23 +55,27 @@ h2 { font-size: 14pt; margin: 0 0 2px; }
 .kpi .r { color: #5b6475; font-size: 8pt; }
 .kpi .v { font-size: 17pt; font-weight: bold; margin: 1mm 0; }
 .kpi .d { color: #8a93a3; font-size: 7.5pt; }
-section { break-before: page; }
-section.primeira { break-before: auto; }
-.janela { display: inline-block; background: #eef2f8; color: #5b6475; border-radius: 99px; padding: 1px 8px; font-size: 8pt; margin: 3px 4px 6px 0; }
-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; margin-top: 3mm; }
-thead { display: table-header-group; }
+/* Na tela, a mesma largura útil da página impressa (o ajuste de zoom mede aqui). */
+@media screen { body { width: 273mm; } }
+/* Cada seção ocupa uma página; a tabela é reduzida (zoom) para caber inteira nela. */
+section { break-before: page; break-inside: avoid; }
+.cabecalho-secao { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 1.5mm; }
+.janela { display: inline-block; background: #eef2f8; color: #5b6475; border-radius: 99px; padding: 1px 8px; font-size: 7.5pt; }
+.caixa-tabela { transform-origin: top left; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 tr { break-inside: avoid; }
-th { background: #eef2f8; color: #3c4556; font-size: 7.5pt; font-weight: bold; text-align: right; padding: 5px 6px; vertical-align: bottom; }
+th { background: #eef2f8; color: #3c4556; font-size: 7.5pt; font-weight: bold; text-align: right; padding: 4px 7px; vertical-align: bottom; }
 th:first-child, td:first-child { text-align: left; }
 th .g { display: block; color: #8a93a3; font-weight: normal; }
-td { padding: 4px 6px; border-bottom: 1px solid #e6e9ee; text-align: right; white-space: nowrap; }
-td:first-child { white-space: normal; }
-tbody tr:nth-child(even) td { background: #fafbfc; }
+td { padding: 2.6px 7px; border-bottom: 1px solid #e6e9ee; text-align: right; white-space: nowrap; font-size: 8.5pt; line-height: 1.3; }
+tbody tr:nth-child(even) td { background: #f8f9fb; }
 td .v { font-weight: bold; }
-td .x { display: block; font-size: 7pt; color: #8a93a3; }
+td .x { display: inline-block; min-width: 13mm; margin-left: 5px; font-size: 7pt; color: #8a93a3; text-align: left; }
 td .melhor { color: #0a7d0a; } td .pior { color: #c13030; }
 td.vazio .v { color: #b0b6c1; font-weight: normal; }
-.nota { color: #8a93a3; font-size: 7.5pt; margin-top: 3mm; }
+.nota { color: #8a93a3; font-size: 7pt; margin: 2mm 0 0; }
+.capa-nota { color: #5b6475; font-size: 9pt; line-height: 1.6; max-width: 200mm; }
+.capa-nota li { margin-bottom: 1mm; }
 .legenda { font-size: 8pt; color: #5b6475; margin: 2mm 0; }
 .legenda i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin: 0 4px 0 10px; vertical-align: -1px; }
 svg text { font-family: Arial, sans-serif; }
@@ -103,38 +107,28 @@ def _tabela_html(tabela: Tabela, com_anterior: bool) -> str:
     return f"<table><thead><tr>{''.join(cab)}</tr></thead><tbody>{''.join(corpo)}</tbody></table>"
 
 
-def _halteres_svg(itens: list[tuple[str, float | None, float | None]]) -> str:
-    validos = [(n, a, g) for n, a, g in itens if a is not None or g is not None]
-    if not validos:
-        return ""
-    validos.sort(key=lambda x: -sum(v for v in x[1:] if v is not None) / len([v for v in x[1:] if v is not None]))
-    todos = [v for _, a, g in validos for v in (a, g) if v is not None]
-    x0 = max(1.0, int((min(todos) - 0.05) * 2) / 2)
-    x1 = 5.0
-    larg, nome_w, val_w, alt = 1000, 190, 60, 15
-    area = larg - nome_w - val_w - 20
-    pos = lambda v: nome_w + 10 + (v - x0) / (x1 - x0) * area  # noqa: E731
-    altura = 26 + alt * len(validos)
-    partes = [f'<svg viewBox="0 0 {larg} {altura}" width="100%" xmlns="http://www.w3.org/2000/svg">']
-    passo = 0.5 if x1 - x0 <= 2 else 1
-    v = x0
-    while v <= x1 + 1e-9:
-        x = pos(v)
-        partes.append(f'<line x1="{x:.1f}" x2="{x:.1f}" y1="18" y2="{altura}" stroke="#e6e9ee"/>')
-        partes.append(f'<text x="{x:.1f}" y="12" font-size="10" fill="#8a93a3" text-anchor="middle">{str(v).replace(".", ",").rstrip("0").rstrip(",")}</text>')
-        v += passo
-    for i, (nome, a, g) in enumerate(validos):
-        y = 26 + i * alt + alt / 2 - 4
-        partes.append(f'<text x="{nome_w}" y="{y + 4:.1f}" font-size="10.5" fill="#3c4556" text-anchor="end">{escape(nome)}</text>')
-        if a is not None and g is not None:
-            partes.append(f'<line x1="{pos(a):.1f}" x2="{pos(g):.1f}" y1="{y:.1f}" y2="{y:.1f}" stroke="#c9ced6" stroke-width="2"/>')
-        for valor, cor in ((a, "#2a78d6"), (g, "#eb6834")):
-            if valor is not None:
-                partes.append(f'<circle cx="{pos(valor):.1f}" cy="{y:.1f}" r="5" fill="{cor}" stroke="#fff" stroke-width="1.5"/>')
-        media = [v for v in (a, g) if v is not None]
-        partes.append(f'<text x="{larg - 6}" y="{y + 4:.1f}" font-size="10.5" fill="#1d2433" text-anchor="end">{formatar(sum(media) / len(media), "nota")}</text>')
-    partes.append("</svg>")
-    return "".join(partes)
+# Ajusta cada tabela para caber numa página A4 deitada: mede a altura de cada
+# seção e aplica zoom. Roda no navegador antes de imprimir.
+SCRIPT_AJUSTE = """
+<script>
+(function () {
+  const mm = 96 / 25.4;
+  const alturaUtil = (210 - 10 - 13) * mm - 6;  // A4 deitado menos margens da @page
+  document.querySelectorAll("section").forEach((sec) => {
+    const caixa = sec.querySelector(".caixa-tabela");
+    if (!caixa) return;
+    const outros = sec.scrollHeight - caixa.scrollHeight;
+    const zoom = Math.min(1, (alturaUtil - outros) / caixa.scrollHeight);
+    if (zoom < 1) caixa.style.zoom = zoom.toFixed(3);
+  });
+})();
+</script>"""
+
+
+def _tabela_simples(cabecalho: list[str], linhas: list[list[str]]) -> str:
+    cab = "".join(f"<th>{escape(c)}</th>" for c in cabecalho)
+    corpo = "".join("<tr>" + "".join(f"<td>{c}</td>" for c in linha) + "</tr>" for linha in linhas)
+    return f"<table><thead><tr>{cab}</tr></thead><tbody>{corpo}</tbody></table>"
 
 
 def montar_html(rel: Relatorio) -> str:
@@ -152,38 +146,50 @@ def montar_html(rel: Relatorio) -> str:
             partes.append(f'<span class="janela">Mês anterior: {escape(t.janela_anterior)}</span>')
         return "".join(partes)
 
-    def secao(t: Tabela, antes: str = "", depois: str = "", classe: str = "") -> str:
-        nota = f'<p class="nota">{escape(t.nota)}</p>' if t.nota else ""
-        tabela = _tabela_html(t, com_anterior)
-        if antes:  # gráfico ocupa a página; a tabela começa na seguinte
-            tabela = f'<div style="break-before: page">{tabela}</div>'
-        return (f'<section class="{classe}"><h2>{escape(t.titulo)}</h2>{janelas(t)}{antes}'
-                f"{tabela}{nota}{depois}</section>")
+    def secao(titulo: str, cabecalho_extra: str, tabela_html: str, nota: str | None) -> str:
+        nota_html = f'<p class="nota">{escape(nota)}</p>' if nota else ""
+        return (f'<section><div class="cabecalho-secao"><h2>{escape(titulo)}</h2>{cabecalho_extra}</div>'
+                f'<div class="caixa-tabela">{tabela_html}</div>{nota_html}</section>')
+
+    def secao_tabela(t: Tabela) -> str:
+        return secao(t.titulo, janelas(t), _tabela_html(t, com_anterior), t.nota)
 
     por_id = {t.id: t for t in rel.tabelas}
-    lojas = por_id["lojas"]
-    grafico = ('<div class="legenda"><i style="background:#2a78d6"></i>App Store<i style="background:#eb6834"></i>Google Play'
-               ' · ordenado pela média das duas lojas</div><div class="grafico">' + _halteres_svg(rel.lojas_grafico) + "</div>")
     tipos = {"IMAGE": "imagem", "VIDEO": "vídeo", "CAROUSEL_ALBUM": "carrossel"}
-    linhas_posts = "".join(
-        f"<tr><td>{escape(p['perfil'])}</td><td>{fmt_data(p['data'])}</td><td>{escape(tipos.get(p['tipo'], p['tipo'] or '—'))}</td>"
-        f"<td><span class='v'>{'ocultas' if p['curtidas'] is None else formatar(p['curtidas'], 'contagem')}</span></td>"
-        f"<td>{formatar(p['comentarios'], 'contagem')}</td>"
-        f"<td>{'<a href=\"' + escape(p['link']) + '\">abrir</a>' if (p['link'] or '').startswith('https://www.instagram.com/') else '—'}</td></tr>"
-        for p in rel.top_posts[:15])
-    posts = ("<h2 style='margin-top:8mm'>Posts mais curtidos</h2><table><thead><tr><th>Perfil</th><th>Data</th><th>Tipo</th>"
-             f"<th>Curtidas</th><th>Comentários</th><th>Link</th></tr></thead><tbody>{linhas_posts}</tbody></table>") if linhas_posts else ""
+    posts = [
+        [escape(p["perfil"]), fmt_data(p["data"]), escape(tipos.get(p["tipo"], p["tipo"] or "—")),
+         f"<span class='v'>{'ocultas' if p['curtidas'] is None else formatar(p['curtidas'], 'contagem')}</span>",
+         formatar(p["comentarios"], "contagem"),
+         f"<a href=\"{escape(p['link'])}\">abrir</a>" if (p["link"] or "").startswith("https://www.instagram.com/") else "—"]
+        for p in rel.top_posts[:30]
+    ]
+    secao_posts = secao("Posts mais curtidos", janelas(por_id["instagram"]),
+                        _tabela_simples(["Perfil", "Data", "Tipo", "Curtidas", "Comentários", "Link"], posts),
+                        "Os 30 posts com mais curtidas na janela do Instagram; a lista completa está no Excel.") if posts else ""
+    conteudo = [
+        "Resumo por instituição: uma linha por instituição com os principais indicadores de cada fonte.",
+        "App Store × Google Play: nota média de cada instituição nas duas lojas, a média e a diferença entre elas.",
+        "Consumidor.gov.br: indicadores do ano corrente.",
+        "Reclame Aqui: indicadores dos últimos 6 meses.",
+        "Instagram: seguidores e posts e curtidas do último mês inteiro, mais os posts mais curtidos.",
+    ]
+    if com_anterior:
+        conteudo.append("Ao lado de cada valor, a variação: ▲ ▼ em verde quando melhora e em vermelho quando piora; "
+                        "volumes (reclamações, posts) ficam em cinza.")
 
     return f"""<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <title>Relatório de reputação · {escape(rel.titulo_mes)}</title><style>{ESTILO}</style></head><body>
 <div class="capa"><h1>Relatório de reputação digital</h1><div class="mes">{escape(rel.titulo_mes[:1].upper() + rel.titulo_mes[1:])}</div>
 <p class="sub">Levantamento de {fmt_data(rel.data_ref)} · {escape(comparacao)} Gerado em {escape(rel.gerado_em)}.</p></div>
 <div class="kpis">{kpis}</div>
-{secao(rel.resumo, classe="primeira")}
-{secao(lojas, antes=grafico)}
-{secao(por_id["consumidor_gov"])}
-{secao(por_id["reclame_aqui"])}
-{secao(por_id["instagram"], depois=posts)}
+<div class="capa-nota"><b>Neste relatório</b><ul>{''.join(f'<li>{escape(c)}</li>' for c in conteudo)}</ul></div>
+{secao_tabela(rel.resumo)}
+{secao_tabela(por_id["lojas"])}
+{secao_tabela(por_id["consumidor_gov"])}
+{secao_tabela(por_id["reclame_aqui"])}
+{secao_tabela(por_id["instagram"])}
+{secao_posts}
+{SCRIPT_AJUSTE}
 </body></html>"""
 
 

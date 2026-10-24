@@ -47,6 +47,8 @@
       - {identificador: "agibank"}
     instagram:
       - {identificador: "agibank"}
+    consumidor_gov:
+      - {identificador: "20141229000045273"}
 
 - nome: Banco do Brasil
   nome_curto: banco_do_brasil
@@ -203,6 +205,8 @@
       - {identificador: "banqi"}
     instagram:
       - {identificador: "casasbahiapay"}
+    consumidor_gov:
+      - {identificador: "20260508009839815"}
 
 - nome: Digio
   nome_curto: digio
@@ -244,7 +248,8 @@
     instagram:
       - {identificador: "itau"}
     consumidor_gov:
-      - {identificador: "20140206000001211"}
+      - {identificador: "20140206000001211", rotulo: "Cartões Itaú"}
+      - {identificador: "20140206000001216", rotulo: "Banco Itaú Unibanco"}
 
 - nome: KMV (Ipiranga)
   nome_curto: kmv
@@ -310,6 +315,8 @@
       - {identificador: "banco-neon"}
     instagram:
       - {identificador: "timeneon"}
+    consumidor_gov:
+      - {identificador: "20181206001199622"}
 
 - nome: Next
   nome_curto: next
@@ -407,6 +414,8 @@
       - {identificador: "revolut"}
     instagram:
       - {identificador: "revolut"}
+    consumidor_gov:
+      - {identificador: "20250808007708182"}
 
 - nome: Rico
   nome_curto: rico
@@ -493,3 +502,6 @@
       - {identificador: "xp-investimentos"}
     instagram:
       - {identificador: "xpinvestimentos"}
+    consumidor_gov:
+      - {identificador: "20160620000305094", rotulo: "XP Investimentos"}
+      - {identificador: "20190723001495894", rotulo: "Banco XP"}

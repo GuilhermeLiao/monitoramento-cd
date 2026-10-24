@@ -85,6 +85,15 @@ transação READ ONLY e injeta os dados em `src/monitor/ferramentas/painel.html`
 HTML/SVG puro sem dependências externas). Cores dos gráficos seguem a paleta
 validada (azul/laranja/verde-água; até 3 séries na evolução).
 
+Relatório mensal: `monitor relatorio --mes AAAA-MM` (`src/monitor/relatorio/`):
+`dados.py` monta as tabelas (valor do mês = último levantamento até o fim do mês;
+compara com o mês anterior), `excel.py` (openpyxl, percentuais como fração,
+variação por fórmula, gráficos nativos) e `pdf.py` (HTML de impressão convertido
+pelo Edge/Chrome headless; só abre arquivo local). Saída em `relatorios/` (ignorada).
+
+**Histórico**: snapshots nunca são apagados (o dono quer comparativos mensais);
+`limpar-brutos` só remove `respostas_brutas`.
+
 Testes de banco usam um schema temporário `teste_*` criado pelo `conftest.py`
 e são pulados sem `AMBIENTE=dev`.
 

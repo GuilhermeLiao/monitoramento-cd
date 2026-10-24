@@ -207,6 +207,26 @@ svg .rotulo-linha { fill: var(--tinta); font-size: 12px; }
 #dica .t { font-weight: 600; margin-bottom: 3px; }
 #dica .l { display: flex; justify-content: space-between; gap: 14px; color: var(--tinta-2); }
 #dica .l b { color: var(--tinta); font-weight: 600; font-variant-numeric: tabular-nums; }
+/* Tabelas de indicadores com variação */
+td .v { font-weight: 600; }
+td .x { display: block; font-size: 11px; font-weight: 500; color: var(--tinta-3); line-height: 1.2; }
+td .x.melhor { color: var(--sobe); } td .x.pior { color: var(--desce); }
+.compacta td { padding: 7px 10px; }
+/* Exportar */
+details.exportar { position: relative; }
+details.exportar summary { list-style: none; cursor: pointer; background: var(--superficie); border: 1px solid var(--borda);
+  border-radius: 9px; padding: 6px 12px; }
+details.exportar summary::-webkit-details-marker { display: none; }
+details.exportar .painel-multi { right: 0; left: auto; width: 330px; font-size: 13px; color: var(--tinta-2); }
+details.exportar code { display: block; background: var(--superficie-2); color: var(--tinta); border-radius: 8px; padding: 8px 10px;
+  margin: 6px 0 10px; font-size: 12px; user-select: all; }
+details.exportar .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+@media print {
+  .topo { position: static; backdrop-filter: none; }
+  .filtros, .abas, .controles button, .controles select, details.exportar { display: none !important; }
+  .cartao, .kpi { box-shadow: none; break-inside: avoid-page; }
+  body { background: #fff; }
+}
 @media (max-width: 640px) {
   .linhas { --col-nome: minmax(80px, 34%); --col-valor: 70px; }
   .campo { flex: 1 1 140px; }
@@ -311,7 +331,7 @@ try {
   if (Number.isInteger(salvo.aba)) estado.aba = salvo.aba;
   Object.assign(local, salvo.local || {});
 } catch (e) { /* sem armazenamento */ }
-const pedida = /aba=(\d)/.exec(location.hash);
+const pedida = /aba=(\d+)/.exec(location.hash);
 if (pedida) estado.aba = Number(pedida[1]);
 const destaquePedido = /destaque=(\d+)/.exec(location.hash);
 if (destaquePedido && INST.has(Number(destaquePedido[1]))) estado.destaque = destaquePedido[1];
@@ -334,6 +354,41 @@ function vigente(perfil, metrica, data = estado.data) {
   }
   return null;
 }
+
+// Data de comparação: último levantamento do mês anterior, o levantamento anterior ou nenhuma.
+{ const pedido = /comparar=(mes|anterior|nenhum)/.exec(location.hash); if (pedido) local.comparar = pedido[1]; }
+if (!["mes", "anterior", "nenhum"].includes(local.comparar)) local.comparar = "mes";
+function dataComparacao() {
+  if (!estado.data || local.comparar === "nenhum") return null;
+  if (local.comparar === "anterior") return DATAS.find((d) => d < estado.data) || null;
+  const inicioMes = estado.data.slice(0, 7) + "-01";
+  return DATAS.find((d) => d < inicioMes) || null;
+}
+const rotuloComparacao = () => {
+  const d = dataComparacao();
+  if (local.comparar === "nenhum") return "sem comparação";
+  return d ? `comparado com ${fmtData(d)}` : (local.comparar === "mes" ? "sem levantamento do mês anterior" : "sem levantamento anterior");
+};
+function variacao(atual, anterior, metrica) {
+  if (vazio(atual) || vazio(anterior) || typeof atual !== "number") return null;
+  const tipo = (ROTULOS[metrica] || [, "dec"])[1];
+  const casas = tipo === "contagem" ? 0 : (tipo === "pct" || tipo === "dias") ? 1 : 2;
+  const dif = atual - anterior;
+  if (Math.abs(dif) < 0.5 * 10 ** -casas) return ["=", "neutro"];
+  const texto = `${dif > 0 ? "▲" : "▼"} ${fmtDec(casas).format(Math.abs(dif))}${tipo === "pct" ? " p.p." : tipo === "dias" ? " d" : ""}`;
+  const sen = sentido(metrica);
+  if (sen === "volume") return [texto, "neutro"];
+  return [texto, (dif > 0) === (sen === "maior") ? "melhor" : "pior"];
+}
+function baixarCsv(nome, cabecalho, linhas) {
+  const esc = (v) => { const t = v === null || v === undefined ? "" : String(v); return /[;"\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  const texto = "﻿" + [cabecalho, ...linhas].map((l) => l.map(esc).join(";")).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([texto], { type: "text/csv;charset=utf-8" }));
+  a.download = nome + ".csv";
+  document.body.append(a); a.click(); a.remove();
+}
+const numeroCsv = (metrica, v) => vazio(v) ? "" : typeof v === "number" ? String(Math.round(v * 100) / 100).replace(".", ",") : v;
 
 // ================================================================ DOM
 function el(tag, attrs = {}, filhos = []) {
@@ -404,6 +459,44 @@ function tabela(cabecalho, linhas) {
   ])]);
 }
 const ehDestaque = (instId) => estado.destaque !== "" && String(instId) === estado.destaque;
+
+// ================================================================ tabela de indicadores
+// linhas: [{inst, nome}]; colunas: [{titulo, grupo, metrica, valor: (linha, data) => número|texto|null}]
+function tabelaIndicadores(chave, linhas, colunas, nomeArquivo, rotuloLinha = "Perfil") {
+  const comp = dataComparacao();
+  const dados = linhas.map((l) => ({ ...l, atuais: colunas.map((c) => c.valor(l, estado.data)),
+    anteriores: colunas.map((c) => comp ? c.valor(l, comp) : null) }));
+  const ordem = local[chave + ":ordem"] || { coluna: -1, desc: false };
+  dados.sort((a, b) => {
+    const i = ordem.coluna;
+    const va = i < 0 ? a.nome : a.atuais[i], vb = i < 0 ? b.nome : b.atuais[i];
+    if (vazio(va)) return 1; if (vazio(vb)) return -1;
+    const r = typeof va === "number" ? va - vb : String(va).localeCompare(String(vb), "pt-BR");
+    return ordem.desc ? -r : r;
+  });
+  const clicar = (i) => { local[chave + ":ordem"] = { coluna: i, desc: ordem.coluna === i ? !ordem.desc : i >= 0 }; salvarEstado(); redesenhar(); };
+  const th = (i, filhos) => el("th", { scope: "col", "aria-sort": ordem.coluna === i ? (ordem.desc ? "descending" : "ascending") : "none" },
+    [el("button", { type: "button", onclick: () => clicar(i) }, filhos)]);
+  const tabelaEl = el("div", { class: "rolagem" }, [el("table", { class: "compacta" }, [
+    el("thead", {}, [el("tr", {}, [th(-1, [rotuloLinha]), ...colunas.map((c, i) => th(i, [c.grupo ? el("span", { class: "grupo", text: c.grupo }) : null, c.titulo]))])]),
+    el("tbody", {}, dados.map((l) => el("tr", { class: ehDestaque(l.inst) ? "destaque" : null }, [
+      el("td", { text: l.nome }),
+      ...colunas.map((c, i) => {
+        const v = l.atuais[i];
+        const texto = vazio(v) ? "—" : c.metrica ? formatar(c.metrica, v) : String(v);
+        const delta = c.metrica ? variacao(v, l.anteriores[i], c.metrica)
+          : (!vazio(l.anteriores[i]) && l.anteriores[i] !== v ? [`antes: ${l.anteriores[i]}`, "neutro"] : null);
+        return el("td", { class: texto === "—" ? "vazio" : null }, [el("span", { class: "v", text: texto }),
+          delta ? el("span", { class: "x " + delta[1], text: delta[0] }) : null]);
+      }),
+    ]))),
+  ])]);
+  const csv = el("button", { type: "button", text: "Baixar CSV", onclick: () => baixarCsv(nomeArquivo || chave,
+    [rotuloLinha, ...colunas.flatMap((c) => [(c.grupo ? c.grupo + " · " : "") + c.titulo + " (atual)", ...(comp ? [c.titulo + " (comparação)"] : [])])],
+    dados.map((l) => [l.nome, ...colunas.flatMap((c, i) => [numeroCsv(c.metrica, l.atuais[i]), ...(comp ? [numeroCsv(c.metrica, l.anteriores[i])] : [])])])) });
+  return { tabela: tabelaEl, csv };
+}
+const legendaComparacao = () => el("div", { class: "janela", text: `Variação: ${rotuloComparacao()} (▲ ▼ verde melhora, vermelho piora)` });
 
 // ================================================================ ordenação e corte
 function ordenar(itens, metrica) {
@@ -621,17 +714,17 @@ function graficoTempo(series, metrica, plataforma) {
 // ================================================================ seções
 function secaoVisaoGeral() {
   const sec = el("section", {});
-  const agregado = (plat, metrica, modo, peso) => (inst) => {
+  const agregado = (plat, metrica, modo, peso) => (inst, data = estado.data) => {
     const vals = [...PERFIS.values()].filter((p) => p.plat === plat && p.inst === inst)
-      .map((p) => [vigente(p.id, metrica)?.valor, peso ? vigente(p.id, peso)?.valor : 1]).filter(([v, w]) => !vazio(v) && !vazio(w));
+      .map((p) => [vigente(p.id, metrica, data)?.valor, peso ? vigente(p.id, peso, data)?.valor : 1]).filter(([v, w]) => !vazio(v) && !vazio(w));
     if (!vals.length) return null;
     if (modo === "soma") return vals.reduce((a, [v]) => a + v, 0);
     const total = vals.reduce((a, [, w]) => a + w, 0);
     return total ? vals.reduce((a, [v, w]) => a + v * w, 0) / total : null;
   };
-  const texto = (plat, metrica) => (inst) => {
+  const texto = (plat, metrica) => (inst, data = estado.data) => {
     const p = [...PERFIS.values()].find((pp) => pp.plat === plat && pp.inst === inst);
-    return p ? vigente(p.id, metrica)?.texto ?? null : null;
+    return p ? vigente(p.id, metrica, data)?.texto ?? null : null;
   };
   const colunas = [
     ["App Store", "Nota", "nota_media", agregado("app_store", "nota_media", "media")],
@@ -683,27 +776,15 @@ function secaoVisaoGeral() {
   }
 
   // Comparativo
-  const chave = "comparativo";
-  const ordem = local[chave + ":ordem"] || { coluna: -1, desc: false };
-  linhas.sort((a, b) => {
-    const i = ordem.coluna;
-    const va = i < 0 ? a.inst.nome : a.valores[i], vb = i < 0 ? b.inst.nome : b.valores[i];
-    if (vazio(va)) return 1; if (vazio(vb)) return -1;
-    const r = typeof va === "number" ? va - vb : String(va).localeCompare(String(vb), "pt-BR");
-    return ordem.desc ? -r : r;
-  });
-  const clicar = (i) => { local[chave + ":ordem"] = { coluna: i, desc: ordem.coluna === i ? !ordem.desc : i >= 0 }; salvarEstado(); redesenhar(); };
-  const th = (i, filhos) => el("th", { scope: "col", "aria-sort": ordem.coluna === i ? (ordem.desc ? "descending" : "ascending") : "none" },
-    [el("button", { type: "button", onclick: () => clicar(i) }, filhos)]);
+  const { tabela: tabelaComparativo, csv: csvComparativo } = tabelaIndicadores("comparativo",
+    insts.map((i) => ({ id: i.id, inst: i.id, nome: i.nome })),
+    colunas.map(([grupo, titulo, metrica, f]) => ({ grupo, titulo, metrica, valor: (l, data) => f(l.inst, data) })),
+    "comparativo-instituicoes", "Instituição");
   const janelas = [["consumidor_gov", "total_reclamacoes", "Consumidor.gov"], ["reclame_aqui", "total_reclamacoes", "Reclame Aqui"], ["instagram", "posts_periodo", "Instagram (posts)"]]
     .map(([pl, m, n]) => { const r = [...PERFIS.values()].filter((p) => p.plat === pl).map((p) => vigente(p.id, m)).find((x) => x && x.ini);
       return r ? `${n}: ${fmtData(r.ini)} – ${fmtData(r.fim)}` : null; }).filter(Boolean);
-  sec.append(cartao("Comparativo por instituição", el("div", { class: "sub", text: "Clique no título de uma coluna para ordenar." }), [],
-    el("div", { class: "rolagem" }, [el("table", {}, [
-      el("thead", {}, [el("tr", {}, [th(-1, ["Instituição"]), ...colunas.map(([g, n], i) => th(i, [el("span", { class: "grupo", text: g }), n]))])]),
-      el("tbody", {}, linhas.map((l) => el("tr", { class: ehDestaque(l.inst.id) ? "destaque" : null }, [el("td", { text: l.inst.nome }),
-        ...l.valores.map((v, i) => { const t = vazio(v) ? "—" : colunas[i][2] ? formatar(colunas[i][2], v) : v; return el("td", { class: t === "—" ? "vazio" : null, text: t }); })]))),
-    ])]),
+  sec.append(cartao("Comparativo por instituição", el("div", {}, [el("div", { class: "sub", text: "Clique no título de uma coluna para ordenar." }), legendaComparacao()]),
+    [csvComparativo], tabelaComparativo,
     "Janelas dos indicadores na data escolhida — " + (janelas.join(" · ") || "sem dados") +
     ". Instituições com mais de um app ou perfil: notas das lojas são média simples; solução e satisfação do Consumidor.gov são ponderadas pelo total de reclamações; contagens são somadas."));
 
@@ -738,65 +819,130 @@ function secaoLojas() {
   ]);
 }
 
+function janelaDe(plat, metrica) {
+  const r = perfisDe(plat).map((p) => vigente(p.id, metrica)).find((x) => x);
+  return janela(r);
+}
+function linhasDe(plat) {
+  return perfisDe(plat).map((p) => ({ id: p.id, inst: p.inst, nome: nomePerfil(p) }))
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+}
+const porPerfil = (metrica, texto) => (l, data) => {
+  const r = vigente(l.id, metrica, data);
+  return r ? (texto ? r.texto : r.valor) : null;
+};
+function cartaoTabela(chave, titulo, plat, metricaJanela, colunas, rodape, linhas) {
+  const { tabela, csv } = tabelaIndicadores(chave, linhas || linhasDe(plat), colunas, chave);
+  const sub = el("div", {}, [janelaDe(plat, metricaJanela), " ", legendaComparacao()]);
+  return cartao(titulo, sub, [csv], tabela, rodape);
+}
+
 function secaoConsumidor() {
-  return el("section", {}, [cartaoRanking("cgov", "Consumidor.gov.br: indicadores do ano", "consumidor_gov",
-    ["pct_resolvidas", "nota_consumidor", "pct_respondidas", "tempo_resposta_dias", "total_reclamacoes"],
-    "Fonte: aba do ano corrente no perfil de cada empresa. Satisfação de 1 a 5.")]);
+  return el("section", {}, [cartaoTabela("cgov-tab", "Consumidor.gov.br: indicadores do ano", "consumidor_gov", "total_reclamacoes", [
+    { titulo: "Reclamações", metrica: "total_reclamacoes", valor: porPerfil("total_reclamacoes") },
+    { titulo: "Índice de solução", metrica: "pct_resolvidas", valor: porPerfil("pct_resolvidas") },
+    { titulo: "Satisfação (1–5)", metrica: "nota_consumidor", valor: porPerfil("nota_consumidor") },
+    { titulo: "Respondidas", metrica: "pct_respondidas", valor: porPerfil("pct_respondidas") },
+    { titulo: "Prazo médio", metrica: "tempo_resposta_dias", valor: porPerfil("tempo_resposta_dias") },
+  ], "Fonte: aba do ano corrente no perfil de cada empresa. Clique no título de uma coluna para ordenar.")]);
 }
 
 function secaoReclameAqui() {
-  return el("section", {}, [cartaoRanking("ra", "Reclame Aqui: últimos 6 meses", "reclame_aqui",
-    ["nota_reclame_aqui", "pct_resolvidas", "pct_voltaria_negocio", "nota_consumidor", "pct_respondidas",
-     "tempo_resposta_dias", "total_reclamacoes", "reclamacoes_avaliadas", "aguardando_resposta"],
-    "Capturado pelo botão do navegador e importado à mão. Nota do consumidor de 0 a 10.",
-    (p) => [["Reputação", vigente(p.id, "status_reputacao")?.texto || "—"]])]);
+  return el("section", {}, [cartaoTabela("ra-tab", "Reclame Aqui: últimos 6 meses", "reclame_aqui", "total_reclamacoes", [
+    { titulo: "Nota (0–10)", metrica: "nota_reclame_aqui", valor: porPerfil("nota_reclame_aqui") },
+    { titulo: "Reputação", valor: porPerfil("status_reputacao", true) },
+    { titulo: "Reclamações", metrica: "total_reclamacoes", valor: porPerfil("total_reclamacoes") },
+    { titulo: "Respondidas", metrica: "pct_respondidas", valor: porPerfil("pct_respondidas") },
+    { titulo: "Resolvidas", metrica: "pct_resolvidas", valor: porPerfil("pct_resolvidas") },
+    { titulo: "Voltariam", metrica: "pct_voltaria_negocio", valor: porPerfil("pct_voltaria_negocio") },
+    { titulo: "Nota consumidor", metrica: "nota_consumidor", valor: porPerfil("nota_consumidor") },
+    { titulo: "Tempo resposta", metrica: "tempo_resposta_dias", valor: porPerfil("tempo_resposta_dias") },
+    { titulo: "Aguardando", metrica: "aguardando_resposta", valor: porPerfil("aguardando_resposta") },
+  ], "Capturado pelo botão do navegador e importado à mão. Nota do consumidor de 0 a 10.")]);
 }
+
+// Posts da janela "último mês inteiro" do levantamento vigente em `data`.
+function postsDaJanela(perfilId, data) {
+  const r = vigente(perfilId, "posts_periodo", data);
+  if (!r || !r.ini) return null;
+  return DADOS.posts.filter((p) => p[0] === perfilId && p[1] >= r.ini && p[1] <= r.fim);
+}
+const curtidas = (posts) => posts ? posts.filter((p) => p[3] !== null).map((p) => p[3]) : [];
 
 function secaoInstagram() {
   const sec = el("section", {});
-  sec.append(cartaoRanking("ig-seg", "Instagram: seguidores", "instagram", ["seguidores"], "Valor na data da coleta."));
-  // Meses disponíveis até a data escolhida.
-  const limite = (estado.data || "9999").slice(0, 7);
-  const meses = [...new Set(DADOS.posts.map((p) => p[2].slice(0, 7)))].filter((m) => m <= limite).sort().reverse();
-  const chave = "ig-mes";
-  const mes = meses.includes(local[chave + ":mes"]) ? local[chave + ":mes"] : meses[0];
-  const metrica = local[chave + ":m"] || "curtidas_media";
-  const corte = local[chave + ":c"] || "todas";
-  const posts = DADOS.posts.filter((p) => p[2].slice(0, 7) === mes && PERFIS.has(p[0]) && visivel(PERFIS.get(p[0]).inst));
-  const itens = perfisDe("instagram").map((p) => {
-    const meus = posts.filter((x) => x[0] === p.id), vis = meus.filter((x) => x[3] !== null);
-    const total = vis.reduce((a, x) => a + x[3], 0);
-    const valor = metrica === "posts_mes" ? meus.length : metrica === "curtidas_total" ? (vis.length ? total : null) : (vis.length ? total / vis.length : null);
-    return { inst: p.inst, nome: nomePerfil(p, true), titulo: nomePerfil(p), valor,
-      extra: [["Posts no mês", fmtInt.format(meus.length)], ["Com curtidas ocultas", fmtInt.format(meus.length - vis.length)]] };
-  });
-  const mesTxt = mes ? nomeMes(mes) : "—";
-  const { corpo, botao } = alternavel(chave, () => meses.length ? graficoRanking(itens, metrica, { corte }) : el("p", { class: "vazio-grafico", text: "Ainda não há posts coletados." }),
-    () => tabelaRanking(itens, metrica, ["Posts no mês", "Com curtidas ocultas"]));
-  sec.append(cartao("Instagram: posts e curtidas", el("div", { class: "janela", text: `Mês: ${mesTxt}` }), [
-    seletor("Métrica", [["curtidas_media", "Curtidas médias por post"], ["curtidas_total", "Curtidas no mês"], ["posts_mes", "Posts no mês"]], metrica,
-      (v) => { local[chave + ":m"] = v; salvarEstado(); redesenhar(); }),
-    meses.length ? seletor("Mês", meses.map((m) => [m, nomeMes(m)]), mes, (v) => { local[chave + ":mes"] = v; salvarEstado(); redesenhar(); }) : null,
-    seletor("Mostrar", opcoesCorte(metrica), corte, (v) => { local[chave + ":c"] = v; salvarEstado(); redesenhar(); }), botao],
-    corpo, "Curtidas mais recentes coletadas de cada post. Perfis que escondem as curtidas ficam sem dado (nunca zero)."));
+  sec.append(cartaoTabela("ig-tab", "Instagram", "instagram", "posts_periodo", [
+    { titulo: "Seguidores", metrica: "seguidores", valor: porPerfil("seguidores") },
+    { titulo: "Posts no mês", metrica: "posts_mes", valor: (l, d) => { const p = postsDaJanela(l.id, d); return p ? p.length : null; } },
+    { titulo: "Curtidas no mês", metrica: "curtidas_total", valor: (l, d) => { const c = curtidas(postsDaJanela(l.id, d)); return c.length ? c.reduce((a, x) => a + x, 0) : null; } },
+    { titulo: "Curtidas por post", metrica: "curtidas_media", valor: (l, d) => { const c = curtidas(postsDaJanela(l.id, d)); return c.length ? c.reduce((a, x) => a + x, 0) / c.length : null; } },
+    { titulo: "Curtidas ocultas", metrica: "posts_mes", valor: (l, d) => { const p = postsDaJanela(l.id, d); return p && p.length ? p.filter((x) => x[3] === null).length : null; } },
+  ], "Seguidores na data da coleta. Posts e curtidas do último mês inteiro antes da coleta (a janela aparece acima). Curtidas ocultas não entram nas somas.",
+  perfisDe("instagram").map((p) => ({ id: p.id, inst: p.inst, nome: nomePerfil(p) }))));
 
-  const top = [...posts].sort((a, b) => (b[3] ?? -1) - (a[3] ?? -1)).slice(0, 25);
-  sec.append(cartao("Posts mais curtidos do mês", el("div", { class: "janela", text: `Mês: ${mesTxt}` }), [],
-    top.length ? el("div", { class: "rolagem" }, [el("table", {}, [
+  // Posts mais curtidos da janela vigente
+  const posts = perfisDe("instagram").flatMap((p) => (postsDaJanela(p.id) || []).map((x) => ({ p, x })));
+  posts.sort((a, b) => (b.x[3] ?? -1) - (a.x[3] ?? -1));
+  const top = posts.slice(0, 25);
+  const tipos = { IMAGE: "imagem", VIDEO: "vídeo", CAROUSEL_ALBUM: "carrossel" };
+  const csv = el("button", { type: "button", text: "Baixar CSV", onclick: () => baixarCsv("posts-instagram",
+    ["Perfil", "Data", "Tipo", "Curtidas", "Comentários", "Link"],
+    posts.map(({ p, x }) => [nomePerfil(p), fmtData(x[1]), tipos[x[6]] || x[6], x[3] === null ? "ocultas" : x[3], x[5], x[7]])) });
+  sec.append(cartao("Posts mais curtidos", janelaDe("instagram", "posts_periodo"), [csv],
+    top.length ? el("div", { class: "rolagem" }, [el("table", { class: "compacta" }, [
       el("thead", {}, [el("tr", {}, ["Perfil", "Data", "Tipo", "Curtidas", "Comentários", ""].map((c) => el("th", { scope: "col", text: c })))]),
-      el("tbody", {}, top.map(([perfil, data, , curtidas, ocultas, comentarios, tipo, link]) => {
-        const p = PERFIS.get(perfil);
+      el("tbody", {}, top.map(({ p, x }) => {
+        const [, data, , curt, ocultas, comentarios, tipo, link] = x;
         const seguro = typeof link === "string" && link.startsWith("https://www.instagram.com/");
-        return el("tr", { class: p && ehDestaque(p.inst) ? "destaque" : null }, [
-          el("td", { text: p ? nomePerfil(p) : "?" }), el("td", { text: fmtData(data) }),
-          el("td", { text: ({ IMAGE: "imagem", VIDEO: "vídeo", CAROUSEL_ALBUM: "carrossel" })[tipo] || (tipo || "—").toLowerCase() }),
-          el("td", { class: curtidas === null ? "vazio" : null, text: curtidas === null ? (ocultas ? "ocultas" : "—") : fmtInt.format(curtidas) }),
+        return el("tr", { class: ehDestaque(p.inst) ? "destaque" : null }, [
+          el("td", { text: nomePerfil(p) }), el("td", { text: fmtData(data) }), el("td", { text: tipos[tipo] || (tipo || "—").toLowerCase() }),
+          el("td", { class: curt === null ? "vazio" : null, text: curt === null ? (ocultas ? "ocultas" : "—") : fmtInt.format(curt) }),
           el("td", { text: comentarios === null ? "—" : fmtInt.format(comentarios) }),
           el("td", {}, [seguro ? el("a", { href: link, target: "_blank", rel: "noopener", text: "abrir ↗" }) : "—"]),
         ]);
       })),
-    ])]) : el("p", { class: "vazio-grafico", text: "Nenhum post neste mês para o filtro escolhido." })));
+    ])]) : el("p", { class: "vazio-grafico", text: "Nenhum post na janela para o filtro escolhido." }),
+    "Mostra os 25 mais curtidos; o CSV traz todos os posts da janela."));
   return sec;
+}
+
+// Comparativo mensal: último levantamento de cada mês, por perfil.
+function secaoMensal() {
+  const chave = "mensal";
+  const plataformas = Object.keys(PLATAFORMAS).filter((pl) => perfisDe(pl).length);
+  const plat = plataformas.includes(local[chave + ":p"]) ? local[chave + ":p"] : plataformas[0];
+  const codigos = [...new Set(DADOS.historico.filter(([p, , , v]) => PERFIS.get(p)?.plat === plat && !vazio(v)).map(([, m]) => m))];
+  const metrica = codigos.includes(local[chave + ":m"]) ? local[chave + ":m"] : codigos[0];
+  const ate = estado.data || "9999-12-31";
+  const meses = [...new Set(DATAS.filter((d) => d <= ate).map((d) => d.slice(0, 7)))].sort().slice(-12);
+  const ultimoDoMes = (perfilId, mes) => {
+    const lista = SERIES.get(perfilId + "|" + metrica) || [];
+    let achado = null;
+    for (const linha of lista) if (linha[0].slice(0, 7) === mes && !vazio(linha[1])) achado = linha[1];
+    return achado;
+  };
+  const mudar = (k, v) => { local[chave + k] = v; salvarEstado(); redesenhar(); };
+  const linhas = perfisDe(plat).sort((a, b) => nomePerfil(a).localeCompare(nomePerfil(b), "pt-BR"))
+    .map((p) => ({ p, valores: meses.map((m) => ultimoDoMes(p.id, m)) }));
+  const rotulo = (m) => new Date(m + "-15T12:00:00").toLocaleDateString("pt-BR", { month: "short", year: "2-digit" });
+  const corpo = metrica && meses.length ? el("div", { class: "rolagem" }, [el("table", { class: "compacta" }, [
+    el("thead", {}, [el("tr", {}, [el("th", { scope: "col", text: "Perfil" }), ...meses.map((m) => el("th", { scope: "col", text: rotulo(m) })),
+      el("th", { scope: "col", text: "Variação no período" })])]),
+    el("tbody", {}, linhas.map(({ p, valores }) => {
+      const preenchidos = valores.filter((v) => !vazio(v));
+      const delta = preenchidos.length > 1 ? variacao(preenchidos[preenchidos.length - 1], preenchidos[0], metrica) : null;
+      return el("tr", { class: ehDestaque(p.inst) ? "destaque" : null }, [el("td", { text: nomePerfil(p) }),
+        ...valores.map((v) => el("td", { class: vazio(v) ? "vazio" : null, text: formatar(metrica, v) })),
+        el("td", {}, [delta ? el("span", { class: "x " + delta[1], style: { display: "inline" }, text: delta[0] }) : el("span", { class: "x", style: { display: "inline" }, text: "—" })])]);
+    })),
+  ])]) : el("p", { class: "vazio-grafico", text: "Sem levantamentos para esta fonte." });
+  const csv = el("button", { type: "button", text: "Baixar CSV", onclick: () => baixarCsv(`mensal-${plat}-${metrica}`,
+    ["Perfil", ...meses], linhas.map(({ p, valores }) => [nomePerfil(p), ...valores.map((v) => numeroCsv(metrica, v))])) });
+  return el("section", {}, [cartao("Comparativo mensal",
+    el("div", { class: "janela", text: `Último levantamento de cada mês · até ${fmtData(estado.data)} · ${meses.length} mês(es) com dados` }), [
+      seletor("Fonte", plataformas.map((pl) => [pl, PLATAFORMAS[pl]]), plat, (v) => mudar(":p", v)),
+      metrica ? seletor("Métrica", codigos.map((m) => [m, rotuloMetrica(m)]), metrica, (v) => mudar(":m", v)) : null, csv],
+    corpo, "Cada coluna é o valor do último levantamento daquele mês. A variação compara o primeiro e o último mês com dados. Os levantamentos nunca são apagados: o histórico cresce a cada coleta.")]);
 }
 
 function secaoEvolucao() {
@@ -865,18 +1011,32 @@ function montarFiltros() {
       try { localStorage.setItem("painel-tema", novo); } catch (e) { /* ok */ }
       redesenhar();
     } });
+  const selComparar = seletor("Comparar com", [["mes", "Mês anterior"], ["anterior", "Levantamento anterior"], ["nenhum", "Sem comparação"]],
+    local.comparar, (v) => { local.comparar = v; salvarEstado(); redesenhar(); });
+  const mesAtual = (estado.data || "").slice(0, 7);
+  const exportar = el("details", { class: "exportar" }, [el("summary", { text: "Exportar" }), el("div", { class: "painel-multi" }, [
+    el("div", { text: "Relatório formatado (PDF e Excel, com tabelas, gráficos e variação do mês) — rode no PowerShell, na pasta do projeto:" }),
+    el("code", { text: `uv run monitor relatorio --mes ${mesAtual || "AAAA-MM"} --abrir` }),
+    el("div", { text: "Ou exporte o que está na tela:" }),
+    el("div", { class: "acoes", style: { marginTop: "6px" } }, [
+      el("button", { type: "button", text: "Imprimir / salvar PDF desta aba", onclick: () => window.print() })]),
+    el("div", { class: "meta", style: { marginTop: "8px" }, text: "Cada tabela também tem o botão \"Baixar CSV\", que abre no Excel." }),
+  ])]);
+  document.addEventListener("click", (e) => { if (!exportar.contains(e.target)) exportar.open = false; });
   caixa.replaceChildren(
     el("label", { class: "campo" }, [el("span", { text: "Dados até" }), selData]),
+    el("label", { class: "campo" }, [el("span", { text: "Comparar com" }), selComparar]),
     el("div", { class: "campo" }, [el("span", { text: "Instituições" }), multi]),
     el("label", { class: "campo" }, [el("span", { text: "Destacar" }), selDestaque]),
     el("div", { class: "campo" }, [el("span", { text: "Tema" }), tema]),
+    el("div", { class: "campo", style: { marginLeft: "auto" } }, [el("span", { text: " " }), exportar]),
   );
 }
 
 // ================================================================ montagem
 document.getElementById("meta").textContent = `Dados de ${DADOS.origem} · página gerada em ${DADOS.gerado_em}`;
 const SECOES = [["Visão geral", secaoVisaoGeral], ["Lojas de apps", secaoLojas], ["Consumidor.gov.br", secaoConsumidor],
-  ["Reclame Aqui", secaoReclameAqui], ["Instagram", secaoInstagram], ["Evolução", secaoEvolucao]];
+  ["Reclame Aqui", secaoReclameAqui], ["Instagram", secaoInstagram], ["Mensal", secaoMensal], ["Evolução", secaoEvolucao]];
 const abas = document.getElementById("abas");
 const conteudo = document.getElementById("conteudo");
 SECOES.forEach(([nome], i) => abas.append(el("button", { type: "button", role: "tab", "aria-selected": "false", text: nome,

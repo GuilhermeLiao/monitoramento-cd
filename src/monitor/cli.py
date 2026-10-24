@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 import webbrowser
 from datetime import datetime
 from pathlib import Path
@@ -16,6 +17,9 @@ from monitor.config_loader import ConfigInvalida, carregar_config
 from monitor.db import repositorios as repo
 from monitor.db.session import criar_fabrica_sessoes
 from monitor.painel import carregar_dados, engine_do_painel, gerar_html
+from monitor.relatorio.dados import montar_relatorio
+from monitor.relatorio.excel import exportar_excel
+from monitor.relatorio.pdf import NavegadorAusente, exportar_pdf
 from monitor.logging_config import configurar_logging
 from monitor.settings import FUSO_REFERENCIA, get_settings
 
@@ -152,6 +156,53 @@ def painel(
     )
     if abrir:
         webbrowser.open(saida.resolve().as_uri())
+
+
+@app.command()
+def relatorio(
+    mes: Annotated[
+        str | None, typer.Option(help="Mês de referência AAAA-MM (padrão: mês do último levantamento).")
+    ] = None,
+    pasta: Annotated[Path, typer.Option(help="Pasta onde salvar os arquivos.")] = Path("relatorios"),
+    formato: Annotated[
+        str, typer.Option(help="pdf, xlsx ou os dois separados por vírgula.")
+    ] = "pdf,xlsx",
+    abrir: Annotated[bool, typer.Option(help="Abrir os arquivos ao terminar.")] = False,
+) -> None:
+    """Exporta o relatório do mês (PDF formatado e Excel com tabelas, variações e gráficos)."""
+    if mes is not None and not re.fullmatch(r"\d{4}-(0[1-9]|1[0-2])", mes):
+        typer.echo("Use o mês no formato AAAA-MM, por exemplo 2026-10.", err=True)
+        raise typer.Exit(2)
+    formatos = {f.strip().lower() for f in formato.split(",") if f.strip()}
+    if not formatos or formatos - {"pdf", "xlsx"}:
+        typer.echo("Formatos válidos: pdf, xlsx.", err=True)
+        raise typer.Exit(2)
+    engine, origem = engine_do_painel()
+    try:
+        dados = carregar_dados(engine)
+    finally:
+        engine.dispose()
+    rel = montar_relatorio(dados, mes, origem)
+    if rel.data_ref is None:
+        typer.echo(f"Não há levantamentos até o fim de {rel.titulo_mes}.", err=True)
+        raise typer.Exit(1)
+    gerados = []
+    if "xlsx" in formatos:
+        gerados.append(exportar_excel(rel, pasta / f"relatorio_{rel.mes}.xlsx"))
+    if "pdf" in formatos:
+        try:
+            gerados.append(exportar_pdf(rel, pasta / f"relatorio_{rel.mes}.pdf"))
+        except NavegadorAusente as erro:
+            typer.echo(str(erro), err=True)
+    comparacao = (f"comparado com {rel.data_anterior:%d/%m/%Y}" if rel.data_anterior
+                  else "sem levantamento do mês anterior para comparar")
+    typer.echo(f"Relatório de {rel.titulo_mes} (levantamento de {rel.data_ref:%d/%m/%Y}, {comparacao}):")
+    for arquivo in gerados:
+        typer.echo(f"  {arquivo.resolve()}")
+        if abrir:
+            os.startfile(arquivo.resolve()) if hasattr(os, "startfile") else webbrowser.open(arquivo.resolve().as_uri())  # type: ignore[attr-defined]
+    if not gerados:
+        raise typer.Exit(1)
 
 
 @app.command("sync-config")

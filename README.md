@@ -98,6 +98,7 @@ uv run monitor coletar todos           # roda todos
 uv run monitor importar-reclame-aqui <arquivo.json>  # grava a captura do botão do Reclame Aqui
 uv run monitor botao-reclame-aqui      # gera a página que instala o botão
 uv run monitor painel                  # gera e abre o dashboard local
+uv run monitor relatorio --mes 2026-10 # exporta o relatório do mês (PDF e Excel)
 uv run monitor sync-config             # sincroniza o YAML com o banco
 uv run monitor limpar-brutos --dias 180  # apaga respostas brutas antigas
 uv run monitor status                  # últimas execuções e falhas por perfil
@@ -283,6 +284,39 @@ Filtros no topo, válidos para todas as abas:
 
 Cada gráfico tem "Mostrar" (todas, 10 melhores, 10 piores) e "Ver tabela". As
 escolhas ficam salvas no navegador.
+
+Consumidor.gov.br, Reclame Aqui e Instagram aparecem como tabelas, com a
+variação de cada indicador logo abaixo do valor (▲ ▼; verde quando melhora,
+vermelho quando piora). O filtro **Comparar com** escolhe a base: mês anterior
+(último levantamento do mês anterior), levantamento anterior ou nenhuma. A aba
+**Mensal** mostra, para uma fonte e métrica, o último levantamento de cada mês
+lado a lado. Toda tabela tem **Baixar CSV** (abre no Excel), e o botão
+**Exportar** imprime a aba atual ou mostra o comando do relatório formatado.
+
+### Relatório mensal (PDF e Excel)
+
+```powershell
+uv run monitor relatorio                     # mês do último levantamento
+uv run monitor relatorio --mes 2026-10 --abrir
+uv run monitor relatorio --formato xlsx      # só o Excel
+```
+
+Gera em `relatorios/` (fora do Git):
+
+- `relatorio_AAAA-MM.pdf`: A4 deitado, com capa e indicadores-chave, resumo por
+  instituição, gráfico App Store × Google Play, tabelas de lojas, Consumidor.gov.br,
+  Reclame Aqui e Instagram, e os posts mais curtidos. Cada valor traz a variação
+  em relação ao mês anterior. Usa o Edge ou o Chrome instalados para gerar o PDF
+  (defina `NAVEGADOR_PDF` se estiverem em outro caminho).
+- `relatorio_AAAA-MM.xlsx`: uma aba por fonte com colunas atual, mês anterior e
+  variação (fórmula, colorida), gráficos nativos (lojas e seguidores), posts do
+  Instagram, **Histórico mensal** e **Todos os levantamentos** (formato longo, com
+  filtros, bom para tabelas dinâmicas) e uma aba **Sobre** com as definições.
+
+O valor de um mês é o do último levantamento até o fim dele; o mês anterior segue
+a mesma regra. Sem levantamento no mês anterior, o relatório avisa e não mostra
+variação. Nenhum levantamento é apagado (`limpar-brutos` remove só as respostas
+brutas das APIs), então os comparativos mensais crescem a cada coleta.
 
 O painel lê o banco de `PAINEL_DATABASE_URL`; sem ela, usa a `DATABASE_URL` do
 `.env` (dev). O topo da página diz de onde vieram os dados. Para ler a produção

@@ -18,6 +18,9 @@ dados/
 *.csv
 *.zip
 
+# Relatórios exportados (monitor relatorio)
+relatorios/
+
 # Documentos de contexto locais
 contexto-*.pdf
 

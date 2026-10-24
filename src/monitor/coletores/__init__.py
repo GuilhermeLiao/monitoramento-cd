@@ -22,3 +22,4 @@ def registrar(classe: type[Coletor]) -> type[Coletor]:
 from monitor.coletores import app_store  # noqa: E402,F401
 from monitor.coletores import google_play  # noqa: E402,F401
 from monitor.coletores import consumidor_gov  # noqa: E402,F401
+from monitor.coletores import instagram  # noqa: E402,F401

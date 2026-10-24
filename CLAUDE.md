@@ -28,7 +28,11 @@ LinkedIn e TikTok não têm API pública viável. Futuro: ranking de reclamaçõ
 Banco Central.
 
 Estado: `app_store`, `google_play` (`monitor coletar lojas` roda os dois),
-`consumidor_gov` e a importação do `reclame_aqui` implementados; `instagram` ainda não.
+`consumidor_gov`, `instagram` e a importação do `reclame_aqui` implementados.
+
+Instagram: `META_ACCESS_TOKEN` (token de Página, vai no cabeçalho Authorization,
+nunca na URL) e `IG_USER_ID`; `META_GRAPH_API_VERSION` padrão `v26.0`. O acesso
+a dados do token vence a cada 90 dias; o coletor expõe `avisos` que a CLI mostra.
 
 **Sem contornar anti-robô**: o Reclame Aqui bloqueia acesso automatizado
 (Cloudflare). Não implemente impersonação de navegador (curl_cffi), Chromium
@@ -72,7 +76,8 @@ uv run pytest
 ```
 
 Variáveis (`.env`): `DATABASE_URL` (obrigatória), `AMBIENTE` (`dev` libera os
-testes de banco), `LOG_LEVEL`, `CONFIG_PATH`, `DB_SCHEMA` (uso dos testes).
+testes de banco), `LOG_LEVEL`, `CONFIG_PATH`, `DB_SCHEMA` (uso dos testes),
+`META_ACCESS_TOKEN`, `IG_USER_ID`, `META_GRAPH_API_VERSION` (Instagram).
 
 Testes de banco usam um schema temporário `teste_*` criado pelo `conftest.py`
 e são pulados sem `AMBIENTE=dev`.
@@ -98,7 +103,8 @@ CHECK, não enum nativo.
 | `arquivos_processados`, `reclamacoes_consumidor_gov`, `reclamacoes_reclame_aqui` | sem uso (fora do escopo de só indicadores) |
 
 Views (`sql/views/`, criadas pela migração 0003), todas com instituição, rótulo
-do perfil e plataforma: `vw_metricas_atuais` e `vw_metricas_mensais`.
+do perfil e plataforma: `vw_metricas_atuais` e `vw_metricas_mensais`; e
+`vw_instagram_posts` (migração 0005): posts com a contagem mais recente.
 `vw_consumidor_gov_periodo` também existe, mas lê `reclamacoes_consumidor_gov`
 e fica vazia.
 

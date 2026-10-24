@@ -9,7 +9,8 @@ Nenhum dado pessoal de consumidor é armazenado: só métricas e atributos categ
 > Estado atual: prontos os coletores das lojas de apps (`app_store` e `google_play`,
 > nota média de cada app) e do Consumidor.gov.br (`consumidor_gov`, indicadores do
 > ano corrente), e a importação semiautomática do Reclame Aqui (indicadores de
-> 6 meses, via botão no navegador). Instagram ainda não foi implementado.
+> 6 meses, via botão no navegador) e do Instagram (`instagram`, seguidores e posts
+> do último mês inteiro com curtidas).
 >
 > O projeto grava só indicadores agregados, como aparecem nas páginas das fontes
 > (notas, totais, percentuais). Reclamações e avaliações individuais não são coletadas.
@@ -91,7 +92,7 @@ identificador é o número da URL: `https://www.consumidor.gov.br/pages/empresa/
 ## 4. Comandos
 
 ```powershell
-uv run monitor coletar <coletor>       # roda um coletor (app_store, google_play, consumidor_gov)
+uv run monitor coletar <coletor>       # roda um coletor (app_store, google_play, consumidor_gov, instagram)
 uv run monitor coletar lojas           # roda app_store e google_play
 uv run monitor coletar todos           # roda todos
 uv run monitor importar-reclame-aqui <arquivo.json>  # grava a captura do botão do Reclame Aqui
@@ -163,6 +164,57 @@ O período vem do "Dados de ... até ..." do painel; capturas de outra aba (12
 meses, 2025...) são recusadas. A data de referência é o dia da captura. Empresas
 que ficaram fora do arquivo aparecem como erro em `monitor status`.
 
+### Instagram
+
+O coletor `instagram` usa a Graph API da Meta (recurso Business Discovery), que
+lê dados públicos de contas profissionais a partir de uma conta profissional sua.
+A cada execução grava, por perfil:
+
+- `seguidores` (valor atual);
+- `posts_periodo`: quantidade de posts do **último mês inteiro** (no fuso de Brasília);
+- cada post desse mês em `posts_instagram`, com data, e a contagem de curtidas e
+  comentários do dia em `snapshots_posts_instagram`. Perfil que esconde as
+  curtidas fica com `curtidas` nula e `curtidas_ocultas = true` (nunca zero).
+
+A view `vw_instagram_posts` lista os posts com a contagem mais recente
+(`mes_publicacao` facilita filtrar o mês). O `identificador` do perfil no YAML é
+o username, sem @. Contas pessoais ou inexistentes aparecem como erro.
+
+#### Credenciais (uma vez)
+
+1. Tenha uma conta profissional do Instagram ligada a uma Página do Facebook da
+   qual a sua conta pessoal do Facebook é administradora.
+2. Em <https://developers.facebook.com>, crie um app do tipo **Empresa** com o
+   produto **Login do Facebook para Empresas**. O app pode ficar em modo de
+   desenvolvimento: como você é administrador, não precisa de revisão da Meta.
+3. No [Graph API Explorer](https://developers.facebook.com/tools/explorer),
+   deixe o servidor em **graph.facebook.com** (não graph.instagram.com), escolha
+   o app e **Token do usuário**, adicione as permissões `instagram_basic`,
+   `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement` e
+   `business_management` e clique em **Generate Access Token**.
+4. Rode `me/accounts?fields=name,instagram_business_account`: o
+   `instagram_business_account.id` é o `IG_USER_ID`.
+5. Teste: `<IG_USER_ID>?fields=business_discovery.username(nubank){followers_count}`.
+6. Token que não expira: no [depurador de token](https://developers.facebook.com/tools/debug/accesstoken),
+   cole o token, **Depurar** → **Estender token de acesso**. Com esse token de 60
+   dias no Explorer, rode `me/accounts?fields=name,access_token`: o
+   `access_token` da sua Página é o `META_ACCESS_TOKEN` (no depurador: "Expira: Nunca").
+7. Coloque `META_ACCESS_TOKEN` e `IG_USER_ID` no `.env` e nos Secrets do GitHub.
+
+#### Renovação a cada 90 dias
+
+Mesmo com o token sem validade, a Meta limita o **acesso a dados** a 90 dias
+desde o último login no app. O coletor verifica isso a cada execução e mostra um
+aviso (também no resumo do GitHub Actions) quando faltarem 10 dias ou menos.
+Para renovar, repita os passos 3 e 6 e atualize o `.env` e o Secret
+`META_ACCESS_TOKEN`.
+
+O coletor respeita os limites de uso da API: desacelera quando os cabeçalhos
+`X-App-Usage` / `X-Business-Use-Case-Usage` passam de 75% e tenta de novo nos
+erros de limite.
+
+### Reclame Aqui: se o site mudar
+
 Se o site mudar e o botão disser que não encontrou o painel, os rótulos
 procurados estão em `src/monitor/ferramentas/botao_reclame_aqui.html` (lista
 `ROTULOS`) e em `src/monitor/coletores/reclame_aqui.py`.
@@ -197,9 +249,8 @@ Em **Settings → Secrets and variables → Actions → New repository secret**,
 | Secret         | Valor                                            |
 |----------------|--------------------------------------------------|
 | `DATABASE_URL` | string de conexão do branch `production` do Neon |
-
-Cada coletor acrescentará os próprios segredos (por exemplo, o token da Graph
-API do Instagram) quando for implementado.
+| `META_ACCESS_TOKEN` | token de Página da Meta (seção Instagram) |
+| `IG_USER_ID` | ID da sua conta profissional do Instagram |
 
 O workflow aplica as migrações e o `sync-config` em produção antes de coletar.
 Portanto, o que estiver na `main` é o que vale para o banco de produção.
@@ -213,6 +264,7 @@ leitura) e use as views:
 |-----------------------------|-----------------------------------------------------------------|
 | `vw_metricas_atuais`        | último valor de cada métrica por perfil ativo                   |
 | `vw_metricas_mensais`       | último snapshot de cada mês por perfil e métrica                |
+| `vw_instagram_posts`        | posts do Instagram com data e a contagem mais recente de curtidas |
 
 Para comparar instituições numa fonte, filtre `plataforma_codigo` e
 `metrica_codigo` em `vw_metricas_atuais`. As colunas `periodo_inicio` e

@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     db_schema: str | None = None
     config_path: Path = Path("config/instituicoes.yaml")
     log_level: str = "INFO"
+    # Instagram (Graph API com login do Facebook). Só o coletor instagram exige.
+    meta_access_token: str | None = None
+    ig_user_id: str | None = None
+    meta_graph_api_version: str = "v26.0"
 
     @property
     def sqlalchemy_url(self) -> str:

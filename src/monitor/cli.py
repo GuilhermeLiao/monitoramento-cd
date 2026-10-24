@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Annotated
@@ -55,12 +56,18 @@ def coletar(
     falhou = False
     for nome in nomes:
         try:
-            resultado = executar_coletor(COLETORES[nome](), fabrica)
-        except Exception:  # noqa: BLE001 - um coletor quebrado não impede os demais
+            instancia = COLETORES[nome]()
+            resultado = executar_coletor(instancia, fabrica)
+        except Exception as erro:  # noqa: BLE001 - um coletor quebrado não impede os demais
             log.exception("falha ao executar coletor", extra={"coletor": nome})
-            typer.echo(f"{nome}: erro antes de processar os perfis (veja o log)")
+            typer.echo(f"{nome}: erro antes de processar os perfis: {erro}")
             falhou = True
             continue
+        for aviso in getattr(instancia, "avisos", []):
+            typer.echo(f"{nome}: AVISO: {aviso}")
+            if os.environ.get("GITHUB_ACTIONS") == "true":
+                # Anotação visível no resumo da execução do GitHub Actions.
+                typer.echo(f"::warning title={nome}::{aviso}")
         typer.echo(
             f"{nome}: {resultado.status} "
             f"({resultado.perfis_ok} ok, {resultado.perfis_erro} com erro)"

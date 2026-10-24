@@ -6,8 +6,12 @@ PostgreSQL no Neon, com views prontas para Looker Studio, Metabase ou Power BI.
 
 Nenhum dado pessoal de consumidor é armazenado: só métricas e atributos categóricos.
 
-> Estado atual: coletores das lojas de apps (`app_store` e `google_play`) prontos,
-> gravando a nota média de cada app. Os demais ainda não foram implementados.
+> Estado atual: prontos os coletores das lojas de apps (`app_store` e `google_play`,
+> nota média de cada app) e do Consumidor.gov.br (`consumidor_gov`, indicadores do
+> ano corrente). Reclame Aqui e Instagram ainda não foram implementados.
+>
+> O projeto grava só indicadores agregados, como aparecem nas páginas das fontes
+> (notas, totais, percentuais). Reclamações e avaliações individuais não são coletadas.
 
 ## 1. Criar o banco no Neon
 
@@ -78,10 +82,15 @@ Abra a página do app na loja do Brasil e copie o identificador da URL:
 Cada app é um perfil; use `rotulo` para distinguir os apps da mesma instituição
 (por exemplo, "App PF" e "App PJ").
 
+### Identificador do Consumidor.gov.br
+
+Busque a empresa em <https://www.consumidor.gov.br> e abra o perfil dela. O
+identificador é o número da URL: `https://www.consumidor.gov.br/pages/empresa/`**`20191119001741080`**`/perfil`.
+
 ## 4. Comandos
 
 ```powershell
-uv run monitor coletar <coletor>       # roda um coletor (app_store, google_play)
+uv run monitor coletar <coletor>       # roda um coletor (app_store, google_play, consumidor_gov)
 uv run monitor coletar lojas           # roda app_store e google_play
 uv run monitor coletar todos           # roda todos
 uv run monitor sync-config             # sincroniza o YAML com o banco
@@ -100,6 +109,24 @@ ou resposta fora do esperado), o perfil fica com erro e nada é gravado para ele
 No Google Play, vários perfis com "nota ausente" de uma vez indicam que a
 biblioteca `google-play-scraper` deixou de entender a página da loja.
 
+O coletor `consumidor_gov` grava os indicadores da aba do ano corrente (por
+exemplo, "2026") do perfil de cada empresa, com `periodo_inicio` = 1º de janeiro
+e `periodo_fim` = dia da coleta:
+
+| Na página                        | Métrica               |
+|----------------------------------|-----------------------|
+| Total de Reclamações Finalizadas | `total_reclamacoes`   |
+| Índice de Solução (%)            | `pct_resolvidas`      |
+| Satisfação com o Atendimento (1 a 5) | `nota_consumidor` |
+| Reclamações Respondidas (%)      | `pct_respondidas`     |
+| Prazo Médio de Respostas (dias)  | `tempo_resposta_dias` |
+
+Indicador exibido como "S/R" (sem registros) é gravado como nulo. Os números
+vêm do mesmo JSON que a página usa (`/pages/empresa/<token>/aba/ANUAL/periodo/998/perfil.json`;
+o token é lido da própria página de perfil). Se o site mudar e todos os perfis
+falharem com "sem a aba do ano", reveja `_ABA_ANUAL` em
+`src/monitor/coletores/consumidor_gov.py`.
+
 Migrações:
 
 ```powershell
@@ -112,7 +139,7 @@ uv run alembic revision -m "descricao"   # nova migração (escrita à mão)
 
 ```powershell
 uv run pytest
-uv run pytest -m live    # opcional: consulta um app real em cada loja, pela rede
+uv run pytest -m live    # opcional: consulta as fontes reais, pela rede
 ```
 
 Os testes de banco criam um schema temporário (`teste_xxxx`) no banco do `.env`,
@@ -146,10 +173,10 @@ leitura) e use as views:
 |-----------------------------|-----------------------------------------------------------------|
 | `vw_metricas_atuais`        | último valor de cada métrica por perfil ativo                   |
 | `vw_metricas_mensais`       | último snapshot de cada mês por perfil e métrica                |
-| `vw_consumidor_gov_periodo` | base diária somável do consumidor.gov para qualquer intervalo   |
 
-Em `vw_consumidor_gov_periodo`, filtre o intervalo em `data_finalizacao`, some as
-colunas e só então divida (por exemplo, nota média = `SUM(soma_notas) / SUM(qtd_notas)`).
+Para comparar instituições numa fonte, filtre `plataforma_codigo` e
+`metrica_codigo` em `vw_metricas_atuais`. As colunas `periodo_inicio` e
+`periodo_fim` dizem a janela de cada indicador (vazias para valores do momento).
 
 ## Estrutura
 

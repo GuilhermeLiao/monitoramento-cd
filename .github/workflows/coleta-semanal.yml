@@ -69,10 +69,10 @@ jobs:
       #   continue-on-error: true
       #   run: uv run monitor coletar reclame_aqui
 
-      # - name: Consumidor.gov.br
-      #   if: env.COLETOR == 'todos' || env.COLETOR == 'consumidor_gov'
-      #   continue-on-error: true
-      #   run: uv run monitor coletar consumidor_gov
+      - name: Consumidor.gov.br
+        if: env.COLETOR == 'todos' || env.COLETOR == 'consumidor_gov'
+        continue-on-error: true
+        run: uv run monitor coletar consumidor_gov
 
       # - name: Instagram
       #   if: env.COLETOR == 'todos' || env.COLETOR == 'instagram'

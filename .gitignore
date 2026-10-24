@@ -18,6 +18,9 @@ dados/
 *.csv
 *.zip
 
+# Documentos de contexto locais
+contexto-*.pdf
+
 # Editor / SO
 .vscode/
 .idea/

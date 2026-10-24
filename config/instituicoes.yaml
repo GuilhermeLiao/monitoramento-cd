@@ -14,7 +14,7 @@
 #   google_play    nome do pacote (parâmetro id= da URL da loja)
 #   Cada app é um perfil: use rotulo para distinguir (App PF, App PJ, Cartão).
 #   reclame_aqui   slug da empresa na URL do Reclame Aqui
-#   consumidor_gov nome da empresa exatamente como aparece nos dados abertos
+#   consumidor_gov número da URL do perfil (consumidor.gov.br/pages/empresa/<número>/perfil)
 #   instagram      username, sem @
 #
 # Exemplo (descomente e ajuste):
@@ -32,12 +32,9 @@
 #     reclame_aqui:
 #       - {identificador: "banco-exemplo"}
 #     consumidor_gov:
-#       - {identificador: "Banco Exemplo"}
+#       - {identificador: "20140206000001701"}
 #     instagram:
 #       - {identificador: "bancoexemplo"}
-#
-# consumidor_gov ainda não está cadastrado: o identificador é o nome da empresa
-# nos dados abertos, a conferir quando o coletor for escrito.
 
 - nome: Agibank
   nome_curto: agibank
@@ -62,6 +59,8 @@
       - {identificador: "banco-do-brasil"}
     instagram:
       - {identificador: "bancodobrasil"}
+    consumidor_gov:
+      - {identificador: "20140206000001701"}
 
 - nome: Banco PAN
   nome_curto: banco_pan
@@ -74,6 +73,8 @@
       - {identificador: "banco-pan"}
     instagram:
       - {identificador: "bancopan"}
+    consumidor_gov:
+      - {identificador: "20141023000031224"}
 
 - nome: Banco BMG
   nome_curto: bmg
@@ -86,6 +87,8 @@
       - {identificador: "banco-bmg"}
     instagram:
       - {identificador: "bancobmg"}
+    consumidor_gov:
+      - {identificador: "20140206000001501"}
 
 - nome: Bradesco
   nome_curto: bradesco
@@ -98,6 +101,8 @@
       - {identificador: "bradesco"}
     instagram:
       - {identificador: "bradesco"}
+    consumidor_gov:
+      - {identificador: "20140206000001101"}
 
 - nome: BRB
   nome_curto: brb
@@ -110,6 +115,8 @@
       - {identificador: "brb-banco-de-brasilia"}
     instagram:
       - {identificador: "bancobrb"}
+    consumidor_gov:
+      - {identificador: "20150624000123993"}
 
 - nome: BTG Pactual
   nome_curto: btg
@@ -124,6 +131,8 @@
       - {identificador: "btg-mais"}
     instagram:
       - {identificador: "btgpactual"}
+    consumidor_gov:
+      - {identificador: "20191119001741080"}
 
 - nome: Banco BV
   nome_curto: bv
@@ -136,6 +145,8 @@
       - {identificador: "bv-financeira"}
     instagram:
       - {identificador: "bancobv"}
+    consumidor_gov:
+      - {identificador: "20140731000017601"}
 
 - nome: C6 Bank
   nome_curto: c6
@@ -148,6 +159,8 @@
       - {identificador: "c6-bank"}
     instagram:
       - {identificador: "c6bank"}
+    consumidor_gov:
+      - {identificador: "20190503001376215"}
 
 - nome: Caixa
   nome_curto: caixa
@@ -160,6 +173,8 @@
       - {identificador: "caixa-economica-federal"}
     instagram:
       - {identificador: "caixa"}
+    consumidor_gov:
+      - {identificador: "20140206000002000"}
 
 - nome: Carrefour (cartões)
   nome_curto: carrefour
@@ -174,6 +189,8 @@
       - {identificador: "carrefour-cartao-de-credito"}
     instagram:
       - {identificador: "cartao.carrefour"}
+    consumidor_gov:
+      - {identificador: "20140902000023540"}
 
 - nome: Casas Bahia Pay (banQi)
   nome_curto: casas_bahia_pay
@@ -198,6 +215,8 @@
       - {identificador: "digio"}
     instagram:
       - {identificador: "meudigio"}
+    consumidor_gov:
+      - {identificador: "20160908000359200"}
 
 - nome: Inter
   nome_curto: inter
@@ -210,6 +229,8 @@
       - {identificador: "inter"}
     instagram:
       - {identificador: "interbr"}
+    consumidor_gov:
+      - {identificador: "20141222000044027"}
 
 - nome: Itaú
   nome_curto: itau
@@ -222,6 +243,8 @@
       - {identificador: "itau"}
     instagram:
       - {identificador: "itau"}
+    consumidor_gov:
+      - {identificador: "20140206000001211"}
 
 - nome: KMV (Ipiranga)
   nome_curto: kmv
@@ -234,6 +257,8 @@
       - {identificador: "ipiranga-postos"}
     instagram:
       - {identificador: "ipiranga"}
+    consumidor_gov:
+      - {identificador: "20200928002430625"}
 
 - nome: Magalu
   nome_curto: magalu
@@ -244,6 +269,9 @@
       - {identificador: "com.cartaoluiza.app", rotulo: "Cartão Luiza"}
     instagram:
       - {identificador: "magazineluiza"}
+    consumidor_gov:
+      - {identificador: "20140206000001480", rotulo: "Loja Física"}
+      - {identificador: "20140206000001481", rotulo: "Loja Online"}
 
 - nome: Mercado Pago
   nome_curto: mercado_pago
@@ -256,6 +284,8 @@
       - {identificador: "mercado-pago"}
     instagram:
       - {identificador: "mercadopagobr"}
+    consumidor_gov:
+      - {identificador: "20141217000043040"}
 
 - nome: Midway
   nome_curto: midway
@@ -266,6 +296,8 @@
       - {identificador: "br.com.midway"}
     reclame_aqui:
       - {identificador: "midway-digital"}
+    consumidor_gov:
+      - {identificador: "20160412000245455"}
 
 - nome: Neon
   nome_curto: neon
@@ -290,6 +322,8 @@
       - {identificador: "next-me"}
     instagram:
       - {identificador: "instadonext"}
+    consumidor_gov:
+      - {identificador: "20200904002377316"}
 
 - nome: Nubank
   nome_curto: nubank
@@ -302,6 +336,8 @@
       - {identificador: "nubank"}
     instagram:
       - {identificador: "nubank"}
+    consumidor_gov:
+      - {identificador: "20150204000053619"}
 
 - nome: PagBank
   nome_curto: pagbank
@@ -314,6 +350,8 @@
       - {identificador: "pagseguro"}
     instagram:
       - {identificador: "pagbank"}
+    consumidor_gov:
+      - {identificador: "20150707000127945"}
 
 - nome: Pernambucanas
   nome_curto: pernambucanas
@@ -327,6 +365,8 @@
       - {identificador: "pernambucanas"}
     instagram:
       - {identificador: "pernambucanas"}
+    consumidor_gov:
+      - {identificador: "20180514000953232"}
 
 - nome: PicPay
   nome_curto: picpay
@@ -339,6 +379,8 @@
       - {identificador: "picpay"}
     instagram:
       - {identificador: "picpay"}
+    consumidor_gov:
+      - {identificador: "20170805000643430"}
 
 - nome: Porto
   nome_curto: porto
@@ -351,6 +393,8 @@
       - {identificador: "portoseg-s-a-credito-financiamento-e-investimento"}
     instagram:
       - {identificador: "porto"}
+    consumidor_gov:
+      - {identificador: "20141219000043697"}
 
 - nome: Revolut
   nome_curto: revolut
@@ -375,6 +419,8 @@
       - {identificador: "rico-corretora-de-investimentos"}
     instagram:
       - {identificador: "ricocomvc"}
+    consumidor_gov:
+      - {identificador: "20180222000846303"}
 
 - nome: Santander
   nome_curto: santander
@@ -387,6 +433,8 @@
       - {identificador: "santander"}
     instagram:
       - {identificador: "santanderbrasil"}
+    consumidor_gov:
+      - {identificador: "20140206000002101"}
 
 - nome: Sicoob
   nome_curto: sicoob
@@ -399,6 +447,8 @@
       - {identificador: "sicoob"}
     instagram:
       - {identificador: "sicoob"}
+    consumidor_gov:
+      - {identificador: "20150114000048245"}
 
 - nome: Sicredi
   nome_curto: sicredi
@@ -413,6 +463,8 @@
       - {identificador: "sicredi"}
     instagram:
       - {identificador: "sicredi"}
+    consumidor_gov:
+      - {identificador: "20150330000091186"}
 
 - nome: Unicred
   nome_curto: unicred
@@ -427,6 +479,8 @@
       - {identificador: "unicred"}
     instagram:
       - {identificador: "unicred"}
+    consumidor_gov:
+      - {identificador: "20180122000810655"}
 
 - nome: XP Investimentos
   nome_curto: xp

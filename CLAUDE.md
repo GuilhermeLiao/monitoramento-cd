@@ -7,18 +7,25 @@ Metabase ou Power BI) direto no banco.
 
 ## Fontes (um coletor por fonte)
 
-| Coletor / plataforma | Como coleta | O que coleta |
-|---|---|---|
-| `app_store` | iTunes Lookup API (em lote) | nota média |
-| `google_play` | biblioteca google-play-scraper, isolada em `adaptador_google_play.py` | nota média |
-| `reclame_aqui` | indicadores por empresa | total de reclamações, % respondidas, % resolvidas, nota do consumidor, voltaria a fazer negócio, tempo de resposta, status de reputação; opcionalmente reclamações individuais |
-| `consumidor_gov` | arquivos mensais de dados abertos | reclamações individuais das instituições monitoradas e métricas por período |
-| `instagram` | Graph API Business Discovery | seguidores, posts do período, curtidas por post (quando visíveis) |
+**Escopo: só indicadores agregados**, como a fonte os exibe na tela (notas,
+totais, percentuais). Nada de reclamações, avaliações ou posts individuais:
+decisão do dono do projeto (24/10/2026). Prefira a fonte que entrega o indicador
+pronto a recalculá-lo a partir de dados brutos. As tabelas `reclamacoes_*`,
+`arquivos_processados`, `posts_instagram` e `snapshots_posts_instagram` existem
+(migração 0001), mas ficam sem uso.
+
+| Coletor / plataforma | Como coleta | O que coleta | Janela |
+|---|---|---|---|
+| `app_store` | iTunes Lookup API (em lote) | nota média | atual |
+| `google_play` | biblioteca google-play-scraper, isolada em `adaptador_google_play.py` | nota média | atual |
+| `reclame_aqui` | indicadores por empresa | total de reclamações, % respondidas, % resolvidas, nota do consumidor, voltaria a fazer negócio, tempo de resposta, status de reputação | 6 meses (padrão do site) |
+| `consumidor_gov` | JSON da aba do ano no perfil da empresa (token lido da página) | total finalizadas, índice de solução, satisfação, % respondidas, prazo médio | ano corrente (1º/jan até a coleta) |
+| `instagram` | Graph API Business Discovery | seguidores e números atuais do perfil | atual |
 
 Futuro: outras redes sociais (só seguidores) e ranking de reclamações do Banco Central.
 
-Estado: `app_store` e `google_play` implementados (`monitor coletar lojas` roda os
-dois); os demais coletores ainda não.
+Estado: `app_store`, `google_play` (`monitor coletar lojas` roda os dois) e
+`consumidor_gov` implementados; `reclame_aqui` e `instagram` ainda não.
 
 Das lojas só se grava `nota_media`, por decisão do dono do projeto: a quantidade
 de avaliações é lida apenas para validar a nota e fica no payload bruto.
@@ -37,7 +44,7 @@ de avaliações é lida apenas para validar a nota e fica no payload bruto.
   local aponta para o branch `dev` do Neon; a string de produção existe só nos
   GitHub Secrets.
 - **Espaço**: plano gratuito do Neon, 0,5 GB. Não guardar payloads grandes em
-  `respostas_brutas` (arquivos do consumidor.gov não entram lá).
+  `respostas_brutas`.
 - Cada coletor roda no GitHub Actions (semanal) e localmente no Windows via CLI.
 
 ## Stack
@@ -79,17 +86,12 @@ CHECK, não enum nativo.
 | `execucoes` | uma linha por rodada de coletor: status `em_andamento`/`sucesso`/`parcial`/`erro`, contagens e `detalhes.erros` por perfil |
 | `snapshots_metricas` | valores das métricas; único em (`perfil_id`, `metrica_codigo`, `data_referencia`, `periodo_inicio`, `periodo_fim`) com NULLS NOT DISTINCT, então reexecutar no dia faz upsert |
 | `respostas_brutas` | payload original de APIs pequenas, para reprocessar; limpo por `limpar-brutos` |
-| `arquivos_processados` | controle de arquivos do consumidor.gov; único em (`fonte`, `hash_sha256`) |
-| `reclamacoes_consumidor_gov` | reclamações individuais sem dados pessoais; `chave_origem` é hash determinístico da linha |
-| `reclamacoes_reclame_aqui` | reclamações individuais sem título, texto ou nome; único em (`perfil_id`, `id_externo`) |
-| `posts_instagram` | posts (único em `media_id`) |
-| `snapshots_posts_instagram` | curtidas e comentários por post e dia; único em (`post_id`, `data_coleta`) |
+| `arquivos_processados`, `reclamacoes_consumidor_gov`, `reclamacoes_reclame_aqui`, `posts_instagram`, `snapshots_posts_instagram` | sem uso (fora do escopo de só indicadores) |
 
 Views (`sql/views/`, criadas pela migração 0003), todas com instituição, rótulo
-do perfil e plataforma: `vw_metricas_atuais`, `vw_metricas_mensais`,
-`vw_consumidor_gov_periodo` (base diária somável: some e depois divida).
-`vw_consumidor_gov_periodo` pressupõe `avaliacao` gravada como `Resolvida`,
-`Não Resolvida` ou `Não Avaliada`.
+do perfil e plataforma: `vw_metricas_atuais` e `vw_metricas_mensais`.
+`vw_consumidor_gov_periodo` também existe, mas lê `reclamacoes_consumidor_gov`
+e fica vazia.
 
 ### Migrações
 

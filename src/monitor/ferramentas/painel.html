@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monitor de reputação</title>
+<style>
+:root {
+  color-scheme: light;
+  --plano: #f9f9f7;
+  --superficie: #fcfcfb;
+  --tinta: #0b0b0b;
+  --tinta-2: #52514e;
+  --tinta-3: #898781;
+  --grade: #e1e0d9;
+  --eixo: #c3c2b7;
+  --borda: rgba(11, 11, 11, 0.10);
+  --serie-1: #2a78d6;
+  --serie-2: #eb6834;
+  --serie-3: #1baf7a;
+  --apagado: #d9d8d2;
+  --bom: #0ca30c;
+  --atencao: #fab219;
+  --critico: #d03b3b;
+  --lavagem: rgba(42, 120, 214, 0.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --plano: #0d0d0d;
+    --superficie: #1a1a19;
+    --tinta: #f0efec;
+    --tinta-2: #c3c2b7;
+    --tinta-3: #898781;
+    --grade: #2c2c2a;
+    --eixo: #383835;
+    --borda: rgba(255, 255, 255, 0.10);
+    --serie-1: #3987e5;
+    --serie-2: #d95926;
+    --serie-3: #199e70;
+    --apagado: #3a3a37;
+    --lavagem: rgba(57, 135, 229, 0.14);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --plano: #0d0d0d;
+  --superficie: #1a1a19;
+  --tinta: #f0efec;
+  --tinta-2: #c3c2b7;
+  --tinta-3: #898781;
+  --grade: #2c2c2a;
+  --eixo: #383835;
+  --borda: rgba(255, 255, 255, 0.10);
+  --serie-1: #3987e5;
+  --serie-2: #d95926;
+  --serie-3: #199e70;
+  --apagado: #3a3a37;
+  --lavagem: rgba(57, 135, 229, 0.14);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--plano); color: var(--tinta);
+       font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { padding: 24px 16px 0; max-width: 1200px; margin: 0 auto; }
+h1 { font-size: 22px; margin: 0; }
+.meta { color: var(--tinta-2); margin: 4px 0 16px; }
+.filtros { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; padding: 12px 0;
+           border-bottom: 1px solid var(--grade); }
+label.campo { display: flex; gap: 8px; align-items: center; color: var(--tinta-2); }
+select, button { font: inherit; color: var(--tinta); background: var(--superficie);
+                 border: 1px solid var(--borda); border-radius: 6px; padding: 5px 8px; }
+button { cursor: pointer; }
+button:hover, select:hover { border-color: var(--eixo); }
+:focus-visible { outline: 2px solid var(--serie-1); outline-offset: 2px; }
+nav { display: flex; gap: 4px; overflow-x: auto; padding: 12px 0 0; }
+nav button { border: none; background: none; color: var(--tinta-2); padding: 8px 12px; border-radius: 6px 6px 0 0;
+             border-bottom: 2px solid transparent; white-space: nowrap; }
+nav button[aria-selected="true"] { color: var(--tinta); border-bottom-color: var(--serie-1); font-weight: 600; }
+main { max-width: 1200px; margin: 0 auto; padding: 16px; }
+section[hidden] { display: none; }
+.cartao { background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; padding: 16px;
+          margin-bottom: 16px; }
+.cartao-topo { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between;
+               margin-bottom: 12px; }
+h2 { font-size: 16px; margin: 0; }
+.nota { color: var(--tinta-3); font-size: 12px; margin: 8px 0 0; }
+.controles { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.ladrilhos { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.ladrilho { background: var(--superficie); border: 1px solid var(--borda); border-radius: 10px; padding: 12px 14px; }
+.ladrilho .rotulo { color: var(--tinta-2); font-size: 13px; }
+.ladrilho .valor { font-size: 20px; font-weight: 600; margin: 2px 0; }
+.ladrilho .detalhe { color: var(--tinta-3); font-size: 12px; }
+.status { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--tinta-2); }
+.status i { width: 16px; height: 16px; border-radius: 50%; display: inline-grid; place-items: center;
+            font-style: normal; font-size: 11px; font-weight: 700; color: #fff; }
+.status .bom { background: var(--bom); }
+.status .atencao { background: var(--atencao); color: #0b0b0b; }
+.status .critico { background: var(--critico); }
+.status .nenhum { background: var(--tinta-3); }
+/* Barras horizontais */
+.barras { display: grid; gap: 2px; }
+.barra { display: grid; grid-template-columns: minmax(120px, 230px) 1fr; gap: 12px; align-items: center;
+         min-height: 24px; border-radius: 4px; padding: 0 4px; }
+.barra:hover, .barra:focus-visible { background: var(--lavagem); }
+.barra .nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--tinta-2); text-align: right; }
+.barra .trilho { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.barra .marca { height: 14px; border-radius: 0 4px 4px 0; background: var(--serie-1); min-width: 2px; flex: none; }
+.barra.apagada .marca { background: var(--apagado); }
+.barra.destaque .nome { color: var(--tinta); font-weight: 600; }
+.barra .numero { color: var(--tinta); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.barra .numero.vazio { color: var(--tinta-3); }
+/* Tabelas */
+.rolagem { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; border-bottom: 1px solid var(--grade); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--tinta-2); font-weight: 600; font-size: 12px; vertical-align: bottom; }
+th button { border: none; background: none; padding: 0; color: inherit; font-weight: inherit; text-align: inherit; }
+th[aria-sort] button::after { content: " ↕"; color: var(--tinta-3); }
+th[aria-sort="ascending"] button::after { content: " ↑"; color: var(--tinta); }
+th[aria-sort="descending"] button::after { content: " ↓"; color: var(--tinta); }
+tr.destaque td { background: var(--lavagem); font-weight: 600; }
+td.vazio { color: var(--tinta-3); }
+.grupo { color: var(--tinta-3); font-weight: 400; display: block; font-size: 11px; }
+a { color: var(--serie-1); }
+/* Linhas */
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 8px; color: var(--tinta-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.legenda i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+svg text { fill: var(--tinta-3); font-size: 11px; font-family: inherit; }
+svg .rotulo-linha { fill: var(--tinta); font-size: 12px; }
+.vazio-grafico { color: var(--tinta-3); padding: 24px 0; text-align: center; }
+#dica { position: fixed; pointer-events: none; z-index: 10; background: var(--superficie); color: var(--tinta);
+        border: 1px solid var(--borda); border-radius: 8px; padding: 8px 10px; box-shadow: 0 6px 18px rgba(0,0,0,.15);
+        font-size: 13px; max-width: 280px; display: none; }
+#dica .t { font-weight: 600; margin-bottom: 2px; }
+#dica .l { display: flex; justify-content: space-between; gap: 12px; color: var(--tinta-2); }
+#dica .l b { color: var(--tinta); font-weight: 600; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  .barra { grid-template-columns: minmax(90px, 40%) 1fr; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Monitor de reputação</h1>
+  <p class="meta" id="meta"></p>
+  <div class="filtros">
+    <label class="campo">Destacar instituição <select id="destaque"><option value="">Nenhuma</option></select></label>
+  </div>
+  <nav role="tablist" id="abas"></nav>
+</header>
+<main id="conteudo"></main>
+<div id="dica" role="tooltip"></div>
+
+<script>
+"use strict";
+const DADOS = /*__DADOS__*/null;
+
+{ const tema = /tema=(light|dark)/.exec(location.hash); if (tema) document.documentElement.dataset.theme = tema[1]; }
+
+// ---------------------------------------------------------------- dados
+const INST = new Map([...DADOS.instituicoes].sort((a, b) => a[1].localeCompare(b[1], "pt-BR"))
+  .map(([id, nome, curto]) => [id, { id, nome, curto }]));
+const PERFIS = new Map(DADOS.perfis.map(([id, inst, plat, ident, rotulo]) => [id, { id, inst, plat, ident, rotulo }]));
+const METRICAS = new Map(DADOS.metricas.map(([codigo, descricao, unidade]) => [codigo, { descricao, unidade }]));
+const ATUAIS = new Map();
+for (const [perfil, metrica, valor, texto, ref, ini, fim] of DADOS.atuais) {
+  if (!ATUAIS.has(perfil)) ATUAIS.set(perfil, new Map());
+  ATUAIS.get(perfil).set(metrica, { valor, texto, ref, ini, fim });
+}
+const PLATAFORMAS = {
+  app_store: "App Store", google_play: "Google Play", consumidor_gov: "Consumidor.gov.br",
+  reclame_aqui: "Reclame Aqui", instagram: "Instagram",
+};
+// Rótulo curto e formato por métrica; "menor" = menor é melhor.
+const ROTULOS = {
+  nota_media: ["Nota média (1–5)", "nota"],
+  total_reclamacoes: ["Reclamações", "contagem"],
+  pct_resolvidas: ["Resolvidas / índice de solução", "pct"],
+  pct_respondidas: ["Respondidas", "pct"],
+  nota_consumidor: ["Nota do consumidor", "nota"],
+  tempo_resposta_dias: ["Tempo de resposta", "dias", "menor"],
+  pct_voltaria_negocio: ["Voltariam a fazer negócio", "pct"],
+  aguardando_resposta: ["Aguardando resposta", "contagem", "menor"],
+  reclamacoes_avaliadas: ["Reclamações avaliadas", "contagem"],
+  nota_reclame_aqui: ["Nota Reclame Aqui (0–10)", "nota"],
+  seguidores: ["Seguidores", "contagem"],
+  posts_periodo: ["Posts no último mês", "contagem"],
+};
+const fmtInt = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
+const fmtDec = (casas) => new Intl.NumberFormat("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
+const fmtData = (iso) => iso ? iso.slice(0, 10).split("-").reverse().join("/") : "—";
+function formatar(metrica, v) {
+  if (v === null || v === undefined || Number.isNaN(v)) return "—";
+  const tipo = (ROTULOS[metrica] || [, "dec"])[1];
+  if (tipo === "contagem") return fmtInt.format(v);
+  if (tipo === "pct") return fmtDec(1).format(v) + "%";
+  if (tipo === "dias") return fmtDec(1).format(v) + " dias";
+  if (tipo === "nota") return fmtDec(2).format(v);
+  return fmtDec(2).format(v);
+}
+const rotuloMetrica = (m) => (ROTULOS[m] || [METRICAS.get(m)?.descricao || m])[0];
+function nomePerfil(p, curto) {
+  const inst = INST.get(p.inst);
+  const base = inst ? inst.nome : "?";
+  if (p.rotulo) return `${base} · ${p.rotulo}`;
+  if (p.plat === "instagram" && !curto) return `${base} (@${p.ident})`;
+  return base;
+}
+const perfisDe = (plat) => [...PERFIS.values()].filter((p) => p.plat === plat);
+const valorAtual = (perfil, metrica) => ATUAIS.get(perfil)?.get(metrica) || null;
+
+// ---------------------------------------------------------------- utilidades de DOM
+function el(tag, attrs = {}, filhos = []) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === null || v === undefined || v === false) continue;
+    if (k === "class") e.className = v;
+    else if (k === "text") e.textContent = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const f of [].concat(filhos)) if (f !== null && f !== undefined) e.append(f);
+  return e;
+}
+const SVG = "http://www.w3.org/2000/svg";
+function s(tag, attrs = {}) {
+  const e = document.createElementNS(SVG, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  return e;
+}
+const dica = document.getElementById("dica");
+function mostrarDica(evento, titulo, linhas) {
+  dica.replaceChildren(el("div", { class: "t", text: titulo }),
+    ...linhas.map(([a, b]) => el("div", { class: "l" }, [el("span", { text: a }), el("b", { text: b })])));
+  dica.style.display = "block";
+  let x, y;
+  if (evento.clientX !== undefined && evento.type.startsWith("mouse")) { x = evento.clientX; y = evento.clientY; }
+  else { const r = evento.currentTarget.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top; }
+  const w = dica.offsetWidth, h = dica.offsetHeight;
+  dica.style.left = Math.min(window.innerWidth - w - 8, Math.max(8, x + 14)) + "px";
+  dica.style.top = (y + h + 20 > window.innerHeight ? y - h - 12 : y + 16) + "px";
+}
+const esconderDica = () => { dica.style.display = "none"; };
+
+let destaque = "";
+const ouvintesDestaque = [];
+function aoMudarDestaque(fn) { ouvintesDestaque.push(fn); }
+
+// Botão "Ver tabela" que alterna entre o gráfico e a tabela equivalente.
+function alternavel(grafico, tabela) {
+  const caixa = el("div", {}, [grafico]);
+  let emTabela = false;
+  const botao = el("button", { type: "button", "aria-pressed": "false", text: "Ver tabela", onclick: () => {
+    emTabela = !emTabela;
+    botao.textContent = emTabela ? "Ver gráfico" : "Ver tabela";
+    botao.setAttribute("aria-pressed", String(emTabela));
+    caixa.replaceChildren(emTabela ? tabela() : grafico);
+  } });
+  return { caixa, botao };
+}
+
+function tabelaSimples(cabecalho, linhas, destacar) {
+  return el("div", { class: "rolagem" }, [el("table", {}, [
+    el("thead", {}, [el("tr", {}, cabecalho.map((c) => el("th", { scope: "col", text: c })))]),
+    el("tbody", {}, linhas.map((l) => el("tr", { class: destacar && destacar(l) ? "destaque" : null },
+      l.celulas.map((c) => el("td", { class: c === "—" ? "vazio" : null, text: c }))))),
+  ])]);
+}
+
+// ---------------------------------------------------------------- barras
+// itens: [{perfil, inst, nome, valor, extra?: [[rotulo, texto]]}]
+function graficoBarras(itens, metrica) {
+  const menor = (ROTULOS[metrica] || [])[2] === "menor";
+  const comValor = itens.filter((i) => i.valor !== null && i.valor !== undefined)
+    .sort((a, b) => menor ? a.valor - b.valor : b.valor - a.valor);
+  const semValor = itens.filter((i) => i.valor === null || i.valor === undefined)
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+  const maximo = Math.max(...comValor.map((i) => i.valor), 0) || 1;
+  const lista = el("div", { class: "barras", role: "list" });
+  const linhas = [];
+  for (const item of [...comValor, ...semValor]) {
+    const texto = formatar(metrica, item.valor);
+    const pct = item.valor === null || item.valor === undefined ? 0 : Math.max(0, item.valor) / maximo * 100;
+    const linha = el("div", { class: "barra", role: "listitem", tabindex: "0",
+      "aria-label": `${item.nome}: ${texto}` }, [
+      el("span", { class: "nome", text: item.nome }),
+      el("span", { class: "trilho" }, [
+        item.valor === null || item.valor === undefined ? null
+          : el("span", { class: "marca", style: `width: calc((100% - 90px) * ${pct / 100})` }),
+        el("span", { class: "numero" + (texto === "—" ? " vazio" : ""), text: texto === "—" ? "sem dado" : texto }),
+      ]),
+    ]);
+    const mostrar = (e) => mostrarDica(e, item.titulo || item.nome, [[rotuloMetrica(metrica), texto], ...(item.extra || [])]);
+    linha.addEventListener("mousemove", mostrar);
+    linha.addEventListener("focus", mostrar);
+    linha.addEventListener("mouseleave", esconderDica);
+    linha.addEventListener("blur", esconderDica);
+    linhas.push([linha, item]);
+    lista.append(linha);
+  }
+  const pintar = () => {
+    for (const [linha, item] of linhas) {
+      const ativo = destaque !== "" && String(item.inst) === destaque;
+      linha.classList.toggle("destaque", ativo);
+      linha.classList.toggle("apagada", destaque !== "" && !ativo);
+    }
+  };
+  pintar();
+  aoMudarDestaque(pintar);
+  if (!comValor.length) return el("p", { class: "vazio-grafico", text: "Ainda não há dados desta métrica." });
+  return lista;
+}
+
+function tabelaDeBarras(itens, metrica, extras = []) {
+  const ordenados = [...itens].sort((a, b) => (b.valor ?? -Infinity) - (a.valor ?? -Infinity));
+  return tabelaSimples(["Perfil", rotuloMetrica(metrica), ...extras],
+    ordenados.map((i) => ({ inst: i.inst, celulas: [i.nome, formatar(metrica, i.valor),
+      ...(i.extra || []).map(([, t]) => t)] })),
+    (l) => destaque !== "" && String(l.inst) === destaque);
+}
+
+// Cartão com seletor de métrica + barras + tabela.
+function cartaoBarras(titulo, plataforma, metricas, notaRodape, extrasFn) {
+  const cartao = el("div", { class: "cartao" });
+  const seletor = el("select", { "aria-label": "Métrica" },
+    metricas.map((m) => el("option", { value: m, text: rotuloMetrica(m) })));
+  const area = el("div");
+  const rodape = el("p", { class: "nota" });
+  const controles = el("div", { class: "controles" }, [metricas.length > 1 ? seletor : null]);
+  cartao.append(el("div", { class: "cartao-topo" }, [el("h2", { text: titulo }), controles]), area, rodape);
+  const desenhar = () => {
+    const metrica = seletor.value || metricas[0];
+    const itens = perfisDe(plataforma).map((p) => {
+      const a = valorAtual(p.id, metrica);
+      return { perfil: p.id, inst: p.inst, nome: nomePerfil(p, true), titulo: nomePerfil(p), valor: a ? a.valor : null,
+               extra: extrasFn ? extrasFn(p, a) : (a && a.ini ? [["Período", `${fmtData(a.ini)} a ${fmtData(a.fim)}`]] : []) };
+    });
+    const referencia = itens.map((i) => valorAtual(i.perfil, metrica)).find((a) => a);
+    const { caixa, botao } = alternavel(graficoBarras(itens, metrica),
+      () => tabelaDeBarras(itens, metrica, (itens[0]?.extra || []).map(([r]) => r)));
+    controles.querySelector("button")?.remove();
+    controles.append(botao);
+    area.replaceChildren(caixa);
+    const partes = [];
+    if (referencia && referencia.ini) partes.push(`Período: ${fmtData(referencia.ini)} a ${fmtData(referencia.fim)}.`);
+    if (referencia) partes.push(`Coleta: ${fmtData(referencia.ref)}.`);
+    if ((ROTULOS[metrica] || [])[2] === "menor") partes.push("Menor é melhor.");
+    if (notaRodape) partes.push(notaRodape);
+    rodape.textContent = partes.join(" ");
+  };
+  seletor.addEventListener("change", desenhar);
+  desenhar();
+  return cartao;
+}
+
+// ---------------------------------------------------------------- linhas (evolução)
+const CORES = ["var(--serie-1)", "var(--serie-2)", "var(--serie-3)"];
+function graficoLinhas(series, metrica) {
+  // series: [{nome, pontos: [[dataIso, valor]]}]
+  const caixa = el("div");
+  const todas = series.flatMap((s) => s.pontos);
+  if (!todas.length) return el("p", { class: "vazio-grafico", text: "Sem histórico para esta combinação." });
+  const datas = [...new Set(todas.map(([d]) => d))].sort();
+  caixa.append(el("div", { class: "legenda" }, series.map((s, i) =>
+    el("span", {}, [el("i", { style: `background:${CORES[i]}` }), s.nome]))));
+  const desenhar = () => {
+    const largura = Math.max(320, caixa.clientWidth || 800);
+    const altura = 300, m = { t: 12, r: 150, b: 28, l: 64 };
+    const w = largura - m.l - m.r, h = altura - m.t - m.b;
+    const t0 = Date.parse(datas[0]), t1 = Date.parse(datas[datas.length - 1]);
+    const x = (d) => datas.length === 1 ? m.l + w / 2 : m.l + (Date.parse(d) - t0) / (t1 - t0) * w;
+    let vmin = Math.min(...todas.map(([, v]) => v)), vmax = Math.max(...todas.map(([, v]) => v));
+    // Amplitude mínima por tipo: evita que uma variação de 0,001 pareça um tombo.
+    const tipo = (ROTULOS[metrica] || [, "dec"])[1];
+    const minima = tipo === "pct" ? 10 : tipo === "dias" ? 2
+      : tipo === "nota" ? (metrica === "nota_reclame_aqui" || (metrica === "nota_consumidor" && vmax > 5) ? 2 : 1)
+      : Math.max(10, Math.abs(vmax) * 0.1);
+    if (vmax - vmin < minima) { const meio = (vmax + vmin) / 2; vmin = meio - minima / 2; vmax = meio + minima / 2; }
+    if (tipo === "pct") { vmin = Math.max(0, vmin); vmax = Math.min(100, Math.max(vmax, vmin + minima)); }
+    if (tipo === "contagem" || tipo === "dias") vmin = Math.max(0, vmin);
+    const passo = (() => { const bruto = (vmax - vmin) / 4; const p = 10 ** Math.floor(Math.log10(bruto));
+      return [1, 2, 2.5, 5, 10].map((k) => k * p).find((k) => k >= bruto); })();
+    const y0 = Math.floor(vmin / passo) * passo, y1 = Math.ceil(vmax / passo) * passo;
+    const y = (v) => m.t + h - (v - y0) / (y1 - y0) * h;
+    const svg = s("svg", { width: largura, height: altura, role: "img",
+      "aria-label": `Evolução de ${rotuloMetrica(metrica)}` });
+    for (let v = y0; v <= y1 + passo / 2; v += passo) {
+      svg.append(s("line", { x1: m.l, x2: m.l + w, y1: y(v), y2: y(v), stroke: "var(--grade)", "stroke-width": 1 }));
+      const t = s("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }); t.textContent = formatar(metrica, v);
+      svg.append(t);
+    }
+    svg.append(s("line", { x1: m.l, x2: m.l + w, y1: m.t + h, y2: m.t + h, stroke: "var(--eixo)", "stroke-width": 1 }));
+    const marcas = datas.length <= 6 ? datas : [0, 0.25, 0.5, 0.75, 1].map((f) => datas[Math.round(f * (datas.length - 1))]);
+    for (const d of [...new Set(marcas)]) {
+      const t = s("text", { x: x(d), y: altura - 8, "text-anchor": "middle" }); t.textContent = fmtData(d);
+      svg.append(t);
+    }
+    const rotulosY = [];
+    series.forEach((serie, i) => {
+      if (!serie.pontos.length) return;
+      const caminho = serie.pontos.map(([d, v], k) => `${k ? "L" : "M"}${x(d)},${y(v)}`).join("");
+      svg.append(s("path", { d: caminho, fill: "none", stroke: CORES[i], "stroke-width": 2,
+        "stroke-linejoin": "round", "stroke-linecap": "round" }));
+      for (const [d, v] of serie.pontos) {
+        svg.append(s("circle", { cx: x(d), cy: y(v), r: 4, fill: CORES[i], stroke: "var(--superficie)", "stroke-width": 2 }));
+      }
+      const [du, vu] = serie.pontos[serie.pontos.length - 1];
+      let ry = y(vu) + 4;
+      for (const outro of rotulosY) if (Math.abs(outro - ry) < 14) ry = outro + 14;
+      rotulosY.push(ry);
+      const t = s("text", { x: x(du) + 10, y: ry, class: "rotulo-linha" });
+      t.textContent = serie.nome.length > 22 ? serie.nome.slice(0, 21) + "…" : serie.nome;
+      svg.append(t);
+    });
+    const guia = s("line", { y1: m.t, y2: m.t + h, stroke: "var(--eixo)", "stroke-width": 1, visibility: "hidden" });
+    svg.append(guia);
+    const area = s("rect", { x: m.l, y: m.t, width: w, height: h, fill: "transparent" });
+    area.addEventListener("mousemove", (e) => {
+      const r = svg.getBoundingClientRect();
+      const px = e.clientX - r.left;
+      const d = datas.reduce((a, b) => Math.abs(x(b) - px) < Math.abs(x(a) - px) ? b : a);
+      guia.setAttribute("x1", x(d)); guia.setAttribute("x2", x(d)); guia.setAttribute("visibility", "visible");
+      mostrarDica(e, fmtData(d), series.map((sr) => {
+        const p = sr.pontos.find(([dd]) => dd === d);
+        return [sr.nome, p ? formatar(metrica, p[1]) : "—"];
+      }));
+    });
+    area.addEventListener("mouseleave", () => { guia.setAttribute("visibility", "hidden"); esconderDica(); });
+    svg.append(area);
+    caixa.querySelector("svg")?.remove();
+    caixa.append(svg);
+  };
+  requestAnimationFrame(desenhar);
+  new ResizeObserver(() => desenhar()).observe(caixa);
+  if (datas.length === 1) caixa.append(el("p", { class: "nota",
+    text: "Só há uma coleta até agora; as linhas aparecem conforme as coletas semanais se acumulam." }));
+  return caixa;
+}
+
+// ---------------------------------------------------------------- seções
+function secaoVisaoGeral() {
+  const sec = el("section", {});
+  // Frescor das coletas
+  const nomesColetores = { app_store: "App Store", google_play: "Google Play", consumidor_gov: "Consumidor.gov.br",
+    reclame_aqui: "Reclame Aqui", instagram: "Instagram" };
+  const ultimas = new Map(DADOS.execucoes.map(([c, st, ini, ok, erro]) => [c, { st, ini, ok, erro }]));
+  const ladrilhos = el("div", { class: "ladrilhos" }, Object.entries(nomesColetores).map(([c, nome]) => {
+    const e = ultimas.get(c);
+    const [cls, icone, txt] = !e ? ["nenhum", "–", "nunca rodou"]
+      : e.st === "sucesso" ? ["bom", "✓", "sucesso"] : e.st === "parcial" ? ["atencao", "!", "parcial"]
+      : e.st === "erro" ? ["critico", "✕", "erro"] : ["nenhum", "…", e.st.replace("_", " ")];
+    return el("div", { class: "ladrilho" }, [
+      el("div", { class: "rotulo", text: nome }),
+      el("div", { class: "valor", text: e ? fmtData(e.ini) : "—" }),
+      el("div", { class: "status" }, [el("i", { class: cls, "aria-hidden": "true", text: icone }), txt]),
+      e ? el("div", { class: "detalhe", text: `${e.ok} perfis ok, ${e.erro} com erro` }) : null,
+    ]);
+  }));
+  sec.append(el("div", { class: "cartao" }, [el("div", { class: "cartao-topo" },
+    [el("h2", { text: "Última coleta de cada fonte" })]), ladrilhos]));
+
+  // Comparativo por instituição
+  const agregados = (plat, metrica, modo, peso) => (inst) => {
+    const ps = perfisDe(plat).filter((p) => p.inst === inst);
+    const vals = ps.map((p) => [valorAtual(p.id, metrica)?.valor, peso ? valorAtual(p.id, peso)?.valor : 1])
+      .filter(([v, w]) => v !== null && v !== undefined && w !== null && w !== undefined);
+    if (!vals.length) return null;
+    if (modo === "soma") return vals.reduce((a, [v]) => a + v, 0);
+    const pesoTotal = vals.reduce((a, [, w]) => a + w, 0);
+    return pesoTotal ? vals.reduce((a, [v, w]) => a + v * w, 0) / pesoTotal : null;
+  };
+  const texto = (plat, metrica) => (inst) => {
+    const p = perfisDe(plat).find((pp) => pp.inst === inst);
+    return p ? valorAtual(p.id, metrica)?.texto ?? null : null;
+  };
+  const colunas = [
+    ["App Store", "Nota", "nota_media", agregados("app_store", "nota_media", "media")],
+    ["Google Play", "Nota", "nota_media", agregados("google_play", "nota_media", "media")],
+    ["Consumidor.gov", "Reclamações", "total_reclamacoes", agregados("consumidor_gov", "total_reclamacoes", "soma")],
+    ["Consumidor.gov", "Solução", "pct_resolvidas", agregados("consumidor_gov", "pct_resolvidas", "media", "total_reclamacoes")],
+    ["Consumidor.gov", "Satisfação (1–5)", "nota_consumidor", agregados("consumidor_gov", "nota_consumidor", "media", "total_reclamacoes")],
+    ["Reclame Aqui", "Nota (0–10)", "nota_reclame_aqui", agregados("reclame_aqui", "nota_reclame_aqui", "media")],
+    ["Reclame Aqui", "Reputação", null, texto("reclame_aqui", "status_reputacao")],
+    ["Instagram", "Seguidores", "seguidores", agregados("instagram", "seguidores", "soma")],
+    ["Instagram", "Posts no mês", "posts_periodo", agregados("instagram", "posts_periodo", "soma")],
+  ];
+  const linhas = [...INST.values()].map((inst) => ({ inst, valores: colunas.map((c) => c[3](inst.id)) }));
+  let ordem = { coluna: -1, desc: false };
+  const corpo = el("tbody");
+  const cabecalhos = [el("th", { scope: "col", "aria-sort": "none" }, [el("button", { type: "button", text: "Instituição",
+    onclick: () => ordenar(-1) })])].concat(colunas.map(([grupo, nome], i) =>
+    el("th", { scope: "col", "aria-sort": "none" }, [el("button", { type: "button", onclick: () => ordenar(i) },
+      [el("span", { class: "grupo", text: grupo }), nome])])));
+  function preencher() {
+    corpo.replaceChildren(...linhas.map((l) => el("tr", { class: destaque !== "" && String(l.inst.id) === destaque ? "destaque" : null }, [
+      el("td", { text: l.inst.nome }),
+      ...l.valores.map((v, i) => {
+        const c = colunas[i];
+        const t = v === null || v === undefined ? "—" : c[2] ? formatar(c[2], v) : v;
+        return el("td", { class: t === "—" ? "vazio" : null, text: t });
+      }),
+    ])));
+  }
+  function ordenar(i) {
+    ordem = { coluna: i, desc: ordem.coluna === i ? !ordem.desc : i >= 0 };
+    linhas.sort((a, b) => {
+      const va = i < 0 ? a.inst.nome : a.valores[i], vb = i < 0 ? b.inst.nome : b.valores[i];
+      if (va === null || va === undefined) return 1;
+      if (vb === null || vb === undefined) return -1;
+      const r = typeof va === "number" ? va - vb : String(va).localeCompare(String(vb), "pt-BR");
+      return ordem.desc ? -r : r;
+    });
+    cabecalhos.forEach((th, k) => th.setAttribute("aria-sort", k - 1 === i ? (ordem.desc ? "descending" : "ascending") : "none"));
+    preencher();
+  }
+  preencher();
+  aoMudarDestaque(preencher);
+  sec.append(el("div", { class: "cartao" }, [
+    el("div", { class: "cartao-topo" }, [el("h2", { text: "Comparativo por instituição" })]),
+    el("div", { class: "rolagem" }, [el("table", {}, [el("thead", {}, [el("tr", {}, cabecalhos)]), corpo])]),
+    el("p", { class: "nota", text: "Clique no título de uma coluna para ordenar. Instituições com mais de um app ou perfil: notas das lojas são a média simples; solução e satisfação do Consumidor.gov são ponderadas pelo total de reclamações; contagens são somadas. Consumidor.gov: ano corrente; Reclame Aqui: últimos 6 meses; Instagram: posts do último mês inteiro." }),
+  ]));
+  return sec;
+}
+
+function secaoLojas() {
+  return el("section", {}, [
+    cartaoBarras("App Store: nota média por app", "app_store", ["nota_media"], "Valor atual exibido na loja do Brasil."),
+    cartaoBarras("Google Play: nota média por app", "google_play", ["nota_media"], "Valor atual exibido na loja do Brasil."),
+  ]);
+}
+
+function secaoConsumidor() {
+  return el("section", {}, [cartaoBarras("Consumidor.gov.br: indicadores do ano", "consumidor_gov",
+    ["total_reclamacoes", "pct_resolvidas", "nota_consumidor", "pct_respondidas", "tempo_resposta_dias"],
+    "Satisfação de 1 a 5. Fonte: aba do ano no perfil de cada empresa.")]);
+}
+
+function secaoReclameAqui() {
+  return el("section", {}, [cartaoBarras("Reclame Aqui: últimos 6 meses", "reclame_aqui",
+    ["nota_reclame_aqui", "total_reclamacoes", "pct_respondidas", "pct_resolvidas", "pct_voltaria_negocio",
+     "nota_consumidor", "tempo_resposta_dias", "reclamacoes_avaliadas", "aguardando_resposta"],
+    "Nota do consumidor de 0 a 10. Capturado pelo botão do navegador e importado à mão.",
+    (p, a) => {
+      const rep = valorAtual(p.id, "status_reputacao")?.texto;
+      return [["Reputação", rep || "—"]];
+    })]);
+}
+
+function secaoInstagram() {
+  const sec = el("section", {});
+  // Curtidas médias por post, por perfil, num mês escolhido.
+  const meses = [...new Set(DADOS.posts.map((p) => p[2]))].sort().reverse();
+  const nomeMes = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  sec.append(cartaoBarras("Instagram: seguidores e posts", "instagram", ["seguidores", "posts_periodo"],
+    "Seguidores: valor atual. Posts: último mês inteiro."));
+
+  const cartao = el("div", { class: "cartao" });
+  const seletorMes = el("select", { "aria-label": "Mês" }, meses.map((m) => el("option", { value: m, text: nomeMes(m) })));
+  const seletorVisao = el("select", { "aria-label": "Visão" }, [
+    el("option", { value: "media", text: "Curtidas médias por post" }),
+    el("option", { value: "lista", text: "Posts mais curtidos" }),
+  ]);
+  const area = el("div");
+  const controles = el("div", { class: "controles" }, [seletorVisao, seletorMes]);
+  cartao.append(el("div", { class: "cartao-topo" }, [el("h2", { text: "Instagram: curtidas por mês" }), controles]), area,
+    el("p", { class: "nota", text: "Curtidas mais recentes coletadas de cada post. Perfis que escondem as curtidas aparecem como \"sem dado\" (nunca zero)." }));
+  const desenhar = () => {
+    if (!meses.length) { area.replaceChildren(el("p", { class: "vazio-grafico", text: "Ainda não há posts coletados." })); return; }
+    const posts = DADOS.posts.filter((p) => p[2] === seletorMes.value);
+    controles.querySelector("button")?.remove();
+    if (seletorVisao.value === "media") {
+      const itens = perfisDe("instagram").map((p) => {
+        const meus = posts.filter((x) => x[0] === p.id);
+        const visiveis = meus.filter((x) => x[3] !== null);
+        const media = visiveis.length ? visiveis.reduce((a, x) => a + x[3], 0) / visiveis.length : null;
+        return { perfil: p.id, inst: p.inst, nome: nomePerfil(p, true), titulo: nomePerfil(p), valor: media,
+                 extra: [["Posts no mês", fmtInt.format(meus.length)], ["Com curtidas ocultas", fmtInt.format(meus.length - visiveis.length)]] };
+      });
+      ROTULOS.curtidas_media = ["Curtidas médias por post", "contagem"];
+      const { caixa, botao } = alternavel(graficoBarras(itens, "curtidas_media"),
+        () => tabelaDeBarras(itens, "curtidas_media", ["Posts no mês", "Com curtidas ocultas"]));
+      controles.append(botao);
+      area.replaceChildren(caixa);
+    } else {
+      const top = [...posts].sort((a, b) => (b[3] ?? -1) - (a[3] ?? -1)).slice(0, 30);
+      const tabela = el("div", { class: "rolagem" }, [el("table", {}, [
+        el("thead", {}, [el("tr", {}, ["Perfil", "Data", "Tipo", "Curtidas", "Comentários", "Link"].map((c) => el("th", { scope: "col", text: c })))]),
+        el("tbody", {}, top.map(([perfil, data, , curtidas, ocultas, comentarios, tipo, link]) => {
+          const p = PERFIS.get(perfil);
+          const seguro = typeof link === "string" && link.startsWith("https://www.instagram.com/");
+          return el("tr", { class: destaque !== "" && p && String(p.inst) === destaque ? "destaque" : null }, [
+            el("td", { text: p ? nomePerfil(p, true) : "?" }), el("td", { text: fmtData(data) }),
+            el("td", { text: (tipo || "—").toLowerCase().replace("_", " ") }),
+            el("td", { class: curtidas === null ? "vazio" : null, text: curtidas === null ? (ocultas ? "ocultas" : "—") : fmtInt.format(curtidas) }),
+            el("td", { text: comentarios === null ? "—" : fmtInt.format(comentarios) }),
+            el("td", {}, [seguro ? el("a", { href: link, target: "_blank", rel: "noopener", text: "abrir" }) : "—"]),
+          ]);
+        })),
+      ])]);
+      area.replaceChildren(tabela);
+    }
+  };
+  seletorMes.addEventListener("change", desenhar);
+  seletorVisao.addEventListener("change", desenhar);
+  aoMudarDestaque(() => { if (seletorVisao.value === "lista") desenhar(); });
+  desenhar();
+  sec.append(cartao);
+  return sec;
+}
+
+function secaoEvolucao() {
+  const sec = el("section", {});
+  const cartao = el("div", { class: "cartao" });
+  const historico = new Map();
+  for (const [perfil, metrica, data, valor] of DADOS.historico) {
+    const chave = perfil + "|" + metrica;
+    if (!historico.has(chave)) historico.set(chave, []);
+    historico.get(chave).push([data, valor]);
+  }
+  const plataformas = Object.keys(PLATAFORMAS).filter((pl) => perfisDe(pl).length);
+  const selPlat = el("select", { "aria-label": "Fonte" }, plataformas.map((pl) => el("option", { value: pl, text: PLATAFORMAS[pl] })));
+  const selMetrica = el("select", { "aria-label": "Métrica" });
+  const selPerfis = [0, 1, 2].map((i) => el("select", { "aria-label": `Perfil ${i + 1}` }));
+  const area = el("div");
+  const controles = el("div", { class: "controles" }, [selPlat, selMetrica]);
+  cartao.append(el("div", { class: "cartao-topo" }, [el("h2", { text: "Evolução no tempo" }), controles]),
+    el("div", { class: "controles", style: "margin-bottom:12px" }, [el("span", { class: "meta", style: "margin:0", text: "Comparar até 3:" }), ...selPerfis]),
+    area, el("p", { class: "nota", text: "Um ponto por coleta. Notas e percentuais não começam do zero: a escala acompanha os dados." }));
+  const preencherMetricas = () => {
+    const pl = selPlat.value;
+    const ids = new Set(perfisDe(pl).map((p) => p.id));
+    const codigos = [...new Set(DADOS.historico.filter(([p]) => ids.has(p)).map(([, m]) => m))];
+    selMetrica.replaceChildren(...codigos.map((m) => el("option", { value: m, text: rotuloMetrica(m) })));
+    const ps = perfisDe(pl).sort((a, b) => nomePerfil(a).localeCompare(nomePerfil(b), "pt-BR"));
+    const preferidos = destaque !== "" ? ps.filter((p) => String(p.inst) === destaque) : [];
+    selPerfis.forEach((sel, i) => {
+      sel.replaceChildren(el("option", { value: "", text: "—" }), ...ps.map((p) => el("option", { value: p.id, text: nomePerfil(p, true) })));
+      const escolhido = preferidos[i] || (i === 0 && !preferidos.length ? ps[0] : null);
+      sel.value = escolhido ? String(escolhido.id) : "";
+    });
+  };
+  const desenhar = () => {
+    const metrica = selMetrica.value;
+    const series = selPerfis.map((sel) => sel.value).filter(Boolean).map((id) => {
+      const p = PERFIS.get(Number(id));
+      return { nome: nomePerfil(p, true), pontos: historico.get(id + "|" + metrica) || [] };
+    });
+    controles.querySelector("button")?.remove();
+    if (!metrica || !series.length) { area.replaceChildren(el("p", { class: "vazio-grafico", text: "Escolha uma métrica e ao menos um perfil." })); return; }
+    const datas = [...new Set(series.flatMap((sr) => sr.pontos.map(([d]) => d)))].sort();
+    const { caixa, botao } = alternavel(graficoLinhas(series, metrica), () => tabelaSimples(
+      ["Data", ...series.map((sr) => sr.nome)],
+      datas.map((d) => ({ celulas: [fmtData(d), ...series.map((sr) => {
+        const p = sr.pontos.find(([dd]) => dd === d); return p ? formatar(metrica, p[1]) : "—"; })] }))));
+    controles.append(botao);
+    area.replaceChildren(caixa);
+  };
+  selPlat.addEventListener("change", () => { preencherMetricas(); desenhar(); });
+  selMetrica.addEventListener("change", desenhar);
+  selPerfis.forEach((sel) => sel.addEventListener("change", desenhar));
+  aoMudarDestaque(() => { preencherMetricas(); desenhar(); });
+  preencherMetricas();
+  desenhar();
+  sec.append(cartao);
+  return sec;
+}
+
+// ---------------------------------------------------------------- montagem
+document.getElementById("meta").textContent =
+  `Dados de ${DADOS.origem} · página gerada em ${DADOS.gerado_em} · ${INST.size} instituições`;
+const selDestaque = document.getElementById("destaque");
+for (const inst of INST.values()) selDestaque.append(el("option", { value: inst.id, text: inst.nome }));
+selDestaque.addEventListener("change", () => {
+  destaque = selDestaque.value;
+  try { localStorage.setItem("painel-destaque", destaque); } catch (e) { /* sem armazenamento */ }
+  ouvintesDestaque.forEach((fn) => fn());
+});
+try { const salvo = localStorage.getItem("painel-destaque"); if (salvo && INST.has(Number(salvo))) { destaque = salvo; selDestaque.value = salvo; } } catch (e) { /* ok */ }
+
+const SECOES = [
+  ["Visão geral", secaoVisaoGeral], ["Lojas de apps", secaoLojas], ["Consumidor.gov.br", secaoConsumidor],
+  ["Reclame Aqui", secaoReclameAqui], ["Instagram", secaoInstagram], ["Evolução", secaoEvolucao],
+];
+const abas = document.getElementById("abas");
+const conteudo = document.getElementById("conteudo");
+const montadas = new Map();
+function abrir(i) {
+  [...abas.children].forEach((b, k) => b.setAttribute("aria-selected", String(k === i)));
+  if (!montadas.has(i)) { const sec = SECOES[i][1](); sec.setAttribute("role", "tabpanel"); montadas.set(i, sec); conteudo.append(sec); }
+  for (const [k, sec] of montadas) sec.hidden = k !== i;
+  try { localStorage.setItem("painel-aba", String(i)); } catch (e) { /* ok */ }
+}
+SECOES.forEach(([nome], i) => abas.append(el("button", { type: "button", role: "tab", "aria-selected": "false", text: nome, onclick: () => abrir(i) })));
+// Aba inicial: #aba=N no endereço, senão a última aberta.
+let inicial = 0;
+const pedida = /aba=(\d)/.exec(location.hash);
+try { inicial = Math.min(SECOES.length - 1, Number(pedida ? pedida[1] : localStorage.getItem("painel-aba")) || 0); } catch (e) { /* ok */ }
+abrir(inicial);
+</script>
+</body>
+</html>

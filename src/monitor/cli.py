@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import webbrowser
 from datetime import datetime
 from pathlib import Path
 from typing import Annotated
@@ -14,6 +15,7 @@ from monitor.coletores.reclame_aqui import ArquivoInvalido, ReclameAquiImportado
 from monitor.config_loader import ConfigInvalida, carregar_config
 from monitor.db import repositorios as repo
 from monitor.db.session import criar_fabrica_sessoes
+from monitor.painel import carregar_dados, engine_do_painel, gerar_html
 from monitor.logging_config import configurar_logging
 from monitor.settings import FUSO_REFERENCIA, get_settings
 
@@ -129,6 +131,27 @@ def botao_reclame_aqui(
     saida.parent.mkdir(parents=True, exist_ok=True)
     saida.write_text(pagina, encoding="utf-8")
     typer.echo(f"Página gerada em {saida.resolve()} ({len(slugs)} empresas). Abra no navegador.")
+
+
+@app.command()
+def painel(
+    saida: Annotated[Path, typer.Option(help="Onde gravar a página.")] = Path("dados/painel.html"),
+    abrir: Annotated[bool, typer.Option(help="Abrir no navegador ao terminar.")] = True,
+) -> None:
+    """Gera o dashboard local (HTML) com os dados do banco do painel."""
+    engine, origem = engine_do_painel()
+    try:
+        dados = carregar_dados(engine)
+    finally:
+        engine.dispose()
+    saida.parent.mkdir(parents=True, exist_ok=True)
+    saida.write_text(gerar_html(dados, origem), encoding="utf-8")
+    typer.echo(
+        f"Painel gerado em {saida.resolve()} com dados de {origem} "
+        f"({len(dados['atuais'])} valores atuais, {len(dados['posts'])} posts)."
+    )
+    if abrir:
+        webbrowser.open(saida.resolve().as_uri())
 
 
 @app.command("sync-config")

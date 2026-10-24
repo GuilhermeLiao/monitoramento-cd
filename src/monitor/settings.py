@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     meta_access_token: str | None = None
     ig_user_id: str | None = None
     meta_graph_api_version: str = "v26.0"
+    # Banco que o painel lê (de preferência produção, com usuário só leitura).
+    # Sem ela, o painel usa a DATABASE_URL.
+    painel_database_url: str | None = None
 
     @property
     def sqlalchemy_url(self) -> str:

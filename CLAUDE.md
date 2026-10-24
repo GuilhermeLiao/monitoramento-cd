@@ -77,7 +77,13 @@ uv run pytest
 
 Variáveis (`.env`): `DATABASE_URL` (obrigatória), `AMBIENTE` (`dev` libera os
 testes de banco), `LOG_LEVEL`, `CONFIG_PATH`, `DB_SCHEMA` (uso dos testes),
-`META_ACCESS_TOKEN`, `IG_USER_ID`, `META_GRAPH_API_VERSION` (Instagram).
+`META_ACCESS_TOKEN`, `IG_USER_ID`, `META_GRAPH_API_VERSION` (Instagram),
+`PAINEL_DATABASE_URL` (banco que o dashboard lê; produção com usuário só leitura).
+
+Dashboard local: `monitor painel` (`src/monitor/painel.py` lê o banco em
+transação READ ONLY e injeta os dados em `src/monitor/ferramentas/painel.html`,
+HTML/SVG puro sem dependências externas). Cores dos gráficos seguem a paleta
+validada (azul/laranja/verde-água; até 3 séries na evolução).
 
 Testes de banco usam um schema temporário `teste_*` criado pelo `conftest.py`
 e são pulados sem `AMBIENTE=dev`.

@@ -97,6 +97,7 @@ uv run monitor coletar lojas           # roda app_store e google_play
 uv run monitor coletar todos           # roda todos
 uv run monitor importar-reclame-aqui <arquivo.json>  # grava a captura do botão do Reclame Aqui
 uv run monitor botao-reclame-aqui      # gera a página que instala o botão
+uv run monitor painel                  # gera e abre o dashboard local
 uv run monitor sync-config             # sincroniza o YAML com o banco
 uv run monitor limpar-brutos --dias 180  # apaga respostas brutas antigas
 uv run monitor status                  # últimas execuções e falhas por perfil
@@ -257,8 +258,42 @@ Portanto, o que estiver na `main` é o que vale para o banco de produção.
 
 ## 7. Painéis
 
-Conecte a ferramenta de BI ao Neon (de preferência com um usuário somente
-leitura) e use as views:
+### Dashboard local
+
+```powershell
+uv run monitor painel            # gera dados/painel.html e abre no navegador
+uv run monitor painel --no-abrir
+```
+
+A página é um arquivo HTML autocontido (funciona sem internet), com abas de
+visão geral (última coleta de cada fonte e comparativo por instituição), lojas,
+Consumidor.gov.br, Reclame Aqui, Instagram (seguidores, posts e curtidas por mês)
+e evolução no tempo. O filtro "Destacar instituição" vale para todas as abas, e
+cada gráfico tem o botão "Ver tabela". Para atualizar, rode o comando de novo.
+
+O painel lê o banco de `PAINEL_DATABASE_URL`; sem ela, usa a `DATABASE_URL` do
+`.env` (dev). O topo da página diz de onde vieram os dados. Para ler a produção
+com segurança, crie um usuário somente leitura no branch `production` do Neon
+(**SQL Editor**, com o branch production selecionado), trocando a senha:
+
+```sql
+CREATE ROLE painel_leitura WITH LOGIN PASSWORD 'troque-esta-senha';
+GRANT CONNECT ON DATABASE neondb TO painel_leitura;
+GRANT USAGE ON SCHEMA public TO painel_leitura;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO painel_leitura;
+-- Tabelas e views criadas depois (novas migrações) também ficam legíveis:
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO painel_leitura;
+```
+
+Depois, em **Connect**, escolha o branch production e o usuário
+`painel_leitura`, copie a conexão direta (sem `-pooler`) e coloque no `.env` como
+`PAINEL_DATABASE_URL=...`. A mesma conexão serve para Looker Studio, Metabase ou
+Power BI.
+
+### Ferramentas de BI
+
+Conecte a ferramenta de BI ao Neon (de preferência com o usuário somente
+leitura acima) e use as views:
 
 | View                        | Conteúdo                                                        |
 |-----------------------------|-----------------------------------------------------------------|

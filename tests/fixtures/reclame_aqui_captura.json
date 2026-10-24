@@ -1,0 +1,24 @@
+{
+  "fonte": "reclame_aqui_botao",
+  "versao": 1,
+  "capturas": [
+    {
+      "slug": "empresa-exemplo",
+      "url": "https://www.reclameaqui.com.br/empresa/empresa-exemplo/",
+      "capturado_em": "2026-10-24T14:30:00.000Z",
+      "periodo": "Dados de 01/04/2026 até 30/09/2026",
+      "reputacao": "ÓTIMA",
+      "nota": "nota média nos últimos 6 meses 8.5/10",
+      "indicadores": {
+        "Reclamações recebidas": "1.646",
+        "Reclamações respondidas": "99,9%",
+        "Aguardando resposta": "2",
+        "Reclamações resolvidas": "89,3%",
+        "Voltariam a fazer negócio": "75,9%",
+        "Reclamações avaliadas": "910",
+        "Nota média do consumidor": "7,63",
+        "Tempo médio de resposta": "10 dias e 10 horas"
+      }
+    }
+  ]
+}

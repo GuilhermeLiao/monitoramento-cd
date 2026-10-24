@@ -15,7 +15,6 @@ on:
           - lojas
           - app_store
           - google_play
-          - reclame_aqui
           - consumidor_gov
           - instagram
 
@@ -64,10 +63,8 @@ jobs:
         continue-on-error: true
         run: uv run monitor coletar google_play
 
-      # - name: Reclame Aqui
-      #   if: env.COLETOR == 'todos' || env.COLETOR == 'reclame_aqui'
-      #   continue-on-error: true
-      #   run: uv run monitor coletar reclame_aqui
+      # Reclame Aqui não roda aqui: o site bloqueia acesso automatizado e os
+      # indicadores são importados à mão (monitor importar-reclame-aqui).
 
       - name: Consumidor.gov.br
         if: env.COLETOR == 'todos' || env.COLETOR == 'consumidor_gov'

@@ -10,22 +10,29 @@ Metabase ou Power BI) direto no banco.
 **Escopo: só indicadores agregados**, como a fonte os exibe na tela (notas,
 totais, percentuais). Nada de reclamações, avaliações ou posts individuais:
 decisão do dono do projeto (24/10/2026). Prefira a fonte que entrega o indicador
-pronto a recalculá-lo a partir de dados brutos. As tabelas `reclamacoes_*`,
-`arquivos_processados`, `posts_instagram` e `snapshots_posts_instagram` existem
-(migração 0001), mas ficam sem uso.
+pronto a recalculá-lo a partir de dados brutos. As tabelas `reclamacoes_*` e
+`arquivos_processados` existem (migração 0001), mas ficam sem uso. Exceção: no
+Instagram, o dono quer a lista de posts do último mês inteiro com data e
+curtidas (`posts_instagram`, `snapshots_posts_instagram`).
 
 | Coletor / plataforma | Como coleta | O que coleta | Janela |
 |---|---|---|---|
 | `app_store` | iTunes Lookup API (em lote) | nota média | atual |
 | `google_play` | biblioteca google-play-scraper, isolada em `adaptador_google_play.py` | nota média | atual |
-| `reclame_aqui` | indicadores por empresa | total de reclamações, % respondidas, % resolvidas, nota do consumidor, voltaria a fazer negócio, tempo de resposta, status de reputação | 6 meses (padrão do site) |
+| `reclame_aqui` | semiautomático: botão de favorito no navegador do dono (`src/monitor/ferramentas/botao_reclame_aqui.html`) gera um JSON, importado por `monitor importar-reclame-aqui` (`coletores/reclame_aqui.py`, fora do registro e do Actions) | total, % respondidas, aguardando resposta, % resolvidas, voltaria a fazer negócio, avaliadas, nota do consumidor (0–10), tempo de resposta, nota RA, status de reputação | 6 meses (padrão do site) |
 | `consumidor_gov` | JSON da aba do ano no perfil da empresa (token lido da página) | total finalizadas, índice de solução, satisfação, % respondidas, prazo médio | ano corrente (1º/jan até a coleta) |
-| `instagram` | Graph API Business Discovery | seguidores e números atuais do perfil | atual |
+| `instagram` | Graph API Business Discovery (conta profissional do dono ligada a uma Página) | seguidores; posts do último mês inteiro com data e curtidas (exceção pedida pelo dono) | atual / último mês inteiro |
 
-Futuro: outras redes sociais (só seguidores) e ranking de reclamações do Banco Central.
+Outras redes sociais (só seguidores) ficaram fora por decisão do dono; X,
+LinkedIn e TikTok não têm API pública viável. Futuro: ranking de reclamações do
+Banco Central.
 
-Estado: `app_store`, `google_play` (`monitor coletar lojas` roda os dois) e
-`consumidor_gov` implementados; `reclame_aqui` e `instagram` ainda não.
+Estado: `app_store`, `google_play` (`monitor coletar lojas` roda os dois),
+`consumidor_gov` e a importação do `reclame_aqui` implementados; `instagram` ainda não.
+
+**Sem contornar anti-robô**: o Reclame Aqui bloqueia acesso automatizado
+(Cloudflare). Não implemente impersonação de navegador (curl_cffi), Chromium
+headless nem outro meio de passar pelo desafio; a captura é feita pelo dono.
 
 Das lojas só se grava `nota_media`, por decisão do dono do projeto: a quantidade
 de avaliações é lida apenas para validar a nota e fica no payload bruto.
@@ -86,7 +93,9 @@ CHECK, não enum nativo.
 | `execucoes` | uma linha por rodada de coletor: status `em_andamento`/`sucesso`/`parcial`/`erro`, contagens e `detalhes.erros` por perfil |
 | `snapshots_metricas` | valores das métricas; único em (`perfil_id`, `metrica_codigo`, `data_referencia`, `periodo_inicio`, `periodo_fim`) com NULLS NOT DISTINCT, então reexecutar no dia faz upsert |
 | `respostas_brutas` | payload original de APIs pequenas, para reprocessar; limpo por `limpar-brutos` |
-| `arquivos_processados`, `reclamacoes_consumidor_gov`, `reclamacoes_reclame_aqui`, `posts_instagram`, `snapshots_posts_instagram` | sem uso (fora do escopo de só indicadores) |
+| `posts_instagram` | posts (único em `media_id`) |
+| `snapshots_posts_instagram` | curtidas e comentários por post e dia; único em (`post_id`, `data_coleta`) |
+| `arquivos_processados`, `reclamacoes_consumidor_gov`, `reclamacoes_reclame_aqui` | sem uso (fora do escopo de só indicadores) |
 
 Views (`sql/views/`, criadas pela migração 0003), todas com instituição, rótulo
 do perfil e plataforma: `vw_metricas_atuais` e `vw_metricas_mensais`.
@@ -117,6 +126,7 @@ Métrica nova entra por migração (insert), antes de o coletor usá-la.
   mesma métrica em janelas diferentes ao mesmo tempo, crie um código por janela.
 
 Catálogo atual: `nota_media`, `total_avaliacoes`, `seguidores`, `posts_periodo`,
+`aguardando_resposta`, `reclamacoes_avaliadas`, `nota_reclame_aqui` (0004),
 `total_reclamacoes`, `pct_respondidas`, `pct_resolvidas`, `nota_consumidor`,
 `tempo_resposta_dias`, `pct_voltaria_negocio`, `status_reputacao`.
 

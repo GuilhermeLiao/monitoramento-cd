@@ -1,4 +1,6 @@
+import json
 import logging
+from datetime import datetime
 from pathlib import Path
 from typing import Annotated
 
@@ -7,6 +9,7 @@ from pydantic import ValidationError
 
 from monitor.coletores import COLETORES, GRUPOS
 from monitor.coletores.executor import executar_coletor
+from monitor.coletores.reclame_aqui import ArquivoInvalido, ReclameAquiImportador
 from monitor.config_loader import ConfigInvalida, carregar_config
 from monitor.db import repositorios as repo
 from monitor.db.session import criar_fabrica_sessoes
@@ -67,6 +70,58 @@ def coletar(
         falhou = falhou or resultado.falhou_tudo
     if falhou:
         raise typer.Exit(1)
+
+
+@app.command("importar-reclame-aqui")
+def importar_reclame_aqui(
+    arquivo: Annotated[
+        Path, typer.Argument(help="Arquivo .json baixado pelo botão do Reclame Aqui.")
+    ],
+) -> None:
+    """Grava os indicadores do Reclame Aqui capturados pelo botão do navegador."""
+    try:
+        importador = ReclameAquiImportador(arquivo)
+    except ArquivoInvalido as erro:
+        typer.echo(str(erro), err=True)
+        raise typer.Exit(2) from erro
+    typer.echo(f"{len(importador.slugs)} empresas no arquivo.")
+    resultado = executar_coletor(importador, criar_fabrica_sessoes())
+    typer.echo(
+        f"reclame_aqui: {resultado.status} "
+        f"({resultado.perfis_ok} ok, {resultado.perfis_erro} com erro)"
+    )
+    for erro in resultado.erros:
+        typer.echo(f"      {erro['identificador']}: {erro['tipo']}: {erro['mensagem']}")
+    if resultado.falhou_tudo:
+        raise typer.Exit(1)
+
+
+@app.command("botao-reclame-aqui")
+def botao_reclame_aqui(
+    saida: Annotated[
+        Path, typer.Option(help="Onde gravar a página de instalação do botão.")
+    ] = Path("dados/botao_reclame_aqui.html"),
+) -> None:
+    """Gera a página que instala o botão de captura do Reclame Aqui no navegador."""
+    config = carregar_config(get_settings().config_path)
+    slugs = sorted(
+        {
+            perfil.identificador.lower()
+            for inst in config
+            for perfil in inst.perfis.get("reclame_aqui", [])
+        }
+    )
+    modelo = (Path(__file__).parent / "ferramentas" / "botao_reclame_aqui.html").read_text(
+        encoding="utf-8"
+    )
+    pagina = (
+        modelo.replace("__SLUGS__", json.dumps(slugs))
+        .replace("__TOTAL__", str(len(slugs)))
+        .replace("__GERADO_EM__", datetime.now(FUSO_REFERENCIA).strftime("%d/%m/%Y"))
+    )
+    saida.parent.mkdir(parents=True, exist_ok=True)
+    saida.write_text(pagina, encoding="utf-8")
+    typer.echo(f"Página gerada em {saida.resolve()} ({len(slugs)} empresas). Abra no navegador.")
 
 
 @app.command("sync-config")

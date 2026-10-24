@@ -8,7 +8,8 @@ Nenhum dado pessoal de consumidor é armazenado: só métricas e atributos categ
 
 > Estado atual: prontos os coletores das lojas de apps (`app_store` e `google_play`,
 > nota média de cada app) e do Consumidor.gov.br (`consumidor_gov`, indicadores do
-> ano corrente). Reclame Aqui e Instagram ainda não foram implementados.
+> ano corrente), e a importação semiautomática do Reclame Aqui (indicadores de
+> 6 meses, via botão no navegador). Instagram ainda não foi implementado.
 >
 > O projeto grava só indicadores agregados, como aparecem nas páginas das fontes
 > (notas, totais, percentuais). Reclamações e avaliações individuais não são coletadas.
@@ -93,6 +94,8 @@ identificador é o número da URL: `https://www.consumidor.gov.br/pages/empresa/
 uv run monitor coletar <coletor>       # roda um coletor (app_store, google_play, consumidor_gov)
 uv run monitor coletar lojas           # roda app_store e google_play
 uv run monitor coletar todos           # roda todos
+uv run monitor importar-reclame-aqui <arquivo.json>  # grava a captura do botão do Reclame Aqui
+uv run monitor botao-reclame-aqui      # gera a página que instala o botão
 uv run monitor sync-config             # sincroniza o YAML com o banco
 uv run monitor limpar-brutos --dias 180  # apaga respostas brutas antigas
 uv run monitor status                  # últimas execuções e falhas por perfil
@@ -126,6 +129,43 @@ vêm do mesmo JSON que a página usa (`/pages/empresa/<token>/aba/ANUAL/periodo/
 o token é lido da própria página de perfil). Se o site mudar e todos os perfis
 falharem com "sem a aba do ano", reveja `_ABA_ANUAL` em
 `src/monitor/coletores/consumidor_gov.py`.
+
+### Reclame Aqui (semiautomático, uma vez por mês)
+
+O Reclame Aqui bloqueia acesso automatizado (desafio anti-robô do Cloudflare), e
+o projeto não contorna essa proteção. A captura é feita por você, no seu
+navegador, com um botão de favorito que lê os números do painel "6 meses":
+
+1. `uv run monitor botao-reclame-aqui` gera `dados/botao_reclame_aqui.html`
+   com a lista de empresas do YAML. Abra esse arquivo no navegador e siga as
+   instruções para arrastar o botão **📌 Monitor RA** para a barra de favoritos.
+   Gere a página de novo sempre que mudar os perfis `reclame_aqui` do YAML.
+2. Abra a página de cada empresa no Reclame Aqui e clique no botão. O painel
+   mostra o que foi capturado e as empresas que faltam, com links.
+3. Clique em **Baixar arquivo** e importe:
+   `uv run monitor importar-reclame-aqui "$HOME\Downloads\reclame_aqui_AAAA-MM-DD.json"`
+4. Clique em **Limpar** no painel para começar o próximo mês do zero.
+
+| No painel                  | Métrica                 |
+|----------------------------|-------------------------|
+| Reclamações recebidas      | `total_reclamacoes`     |
+| Reclamações respondidas    | `pct_respondidas`       |
+| Aguardando resposta        | `aguardando_resposta`   |
+| Reclamações resolvidas     | `pct_resolvidas`        |
+| Voltariam a fazer negócio  | `pct_voltaria_negocio`  |
+| Reclamações avaliadas      | `reclamacoes_avaliadas` |
+| Nota média do consumidor (0 a 10) | `nota_consumidor` |
+| Tempo médio de resposta    | `tempo_resposta_dias` ("10 dias e 10 horas" = 10,4167) |
+| Nota "x/10" da reputação   | `nota_reclame_aqui`     |
+| Reputação (Ótimo, Bom...)  | `status_reputacao` (texto) |
+
+O período vem do "Dados de ... até ..." do painel; capturas de outra aba (12
+meses, 2025...) são recusadas. A data de referência é o dia da captura. Empresas
+que ficaram fora do arquivo aparecem como erro em `monitor status`.
+
+Se o site mudar e o botão disser que não encontrou o painel, os rótulos
+procurados estão em `src/monitor/ferramentas/botao_reclame_aqui.html` (lista
+`ROTULOS`) e em `src/monitor/coletores/reclame_aqui.py`.
 
 Migrações:
 

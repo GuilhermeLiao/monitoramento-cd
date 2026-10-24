@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Botão do Reclame Aqui</title>
+<style>
+  :root { --fundo: #f6f7f9; --texto: #1d2330; --suave: #5b6475; --destaque: #2f6fdb; --cartao: #ffffff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fundo: #15181e; --texto: #e7e9ee; --suave: #a3abba; --destaque: #6fa0ff; --cartao: #1f232b; }
+  }
+  body { margin: 0; background: var(--fundo); color: var(--texto); font: 16px/1.55 system-ui, sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 1.5rem; margin: 0 0 8px; }
+  p, li { color: var(--suave); }
+  strong { color: var(--texto); }
+  .botao { display: inline-block; margin: 16px 0 24px; padding: 12px 20px; border-radius: 8px;
+           background: var(--destaque); color: #fff; font-weight: 600; text-decoration: none; cursor: grab; }
+  .cartao { background: var(--cartao); border-radius: 10px; padding: 4px 20px 12px; }
+  code { font-size: .9em; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Botão do Reclame Aqui</h1>
+  <p>Captura os indicadores da aba <strong>6 meses</strong> da página de cada empresa, no seu
+     próprio navegador, e gera um arquivo para o <code>monitor importar-reclame-aqui</code>.
+     Lista gerada em __GERADO_EM__ com __TOTAL__ empresas.</p>
+
+  <a class="botao" id="botao" href="#">📌 Monitor RA</a>
+
+  <div class="cartao">
+    <h2>Instalar (uma vez)</h2>
+    <ol>
+      <li>Mostre a barra de favoritos (<strong>Ctrl+Shift+B</strong> no Chrome e no Edge).</li>
+      <li>Arraste o botão azul acima para a barra de favoritos.</li>
+    </ol>
+    <h2>Usar (uma vez por mês)</h2>
+    <ol>
+      <li>Abra a página de uma empresa, por exemplo
+        <a href="https://www.reclameaqui.com.br/empresa/nubank/" target="_blank" rel="noopener">reclameaqui.com.br/empresa/nubank</a>,
+        com a aba <strong>6 meses</strong> selecionada (é a padrão).</li>
+      <li>Clique em <strong>📌 Monitor RA</strong> na barra de favoritos. Um painel confirma a
+        captura e lista as empresas que faltam, com links.</li>
+      <li>Repita até o painel dizer que não falta nenhuma e clique em <strong>Baixar arquivo</strong>.</li>
+      <li>No PowerShell, na pasta do projeto:<br>
+        <code>uv run monitor importar-reclame-aqui "$HOME\Downloads\reclame_aqui_AAAA-MM-DD.json"</code></li>
+      <li>Depois de importar, clique em <strong>Limpar</strong> no painel para começar o próximo mês do zero.</li>
+    </ol>
+    <p>O botão só lê os números do painel de reputação. Não lê reclamações nem dados de consumidores.</p>
+  </div>
+</main>
+
+<script>
+function monitorRA(SLUGS) {
+  var CHAVE = 'monitorReclameAqui';
+  var ROTULOS = ['Reclamações recebidas', 'Reclamações respondidas', 'Aguardando resposta',
+    'Reclamações resolvidas', 'Voltariam a fazer negócio', 'Reclamações avaliadas',
+    'Nota média do consumidor', 'Tempo médio de resposta'];
+  function norm(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim(); }
+  function ler() { try { return JSON.parse(localStorage.getItem(CHAVE)) || {}; } catch (e) { return {}; } }
+  function salvar(d) { try { localStorage.setItem(CHAVE, JSON.stringify(d)); return true; } catch (e) { return false; } }
+
+  var antigo = document.getElementById('monitor-ra-painel');
+  if (antigo) antigo.remove();
+
+  var dados = ler();
+  var mensagem;
+  var m = location.hostname.indexOf('reclameaqui.com.br') >= 0 && location.pathname.match(/^\/empresa\/([^\/]+)/);
+  if (!m) {
+    mensagem = 'Abra a página de uma empresa no Reclame Aqui para capturar.';
+  } else {
+    var slug = decodeURIComponent(m[1]).toLowerCase();
+    var linhas = document.body.innerText.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+    var indicadores = {};
+    ROTULOS.forEach(function (rotulo) {
+      for (var i = 1; i < linhas.length; i++) {
+        if (norm(linhas[i]) === norm(rotulo)) { indicadores[rotulo] = linhas[i - 1]; break; }
+      }
+    });
+    var texto = linhas.join('\n');
+    var periodo = texto.match(/Dados de \d{2}\/\d{2}\/\d{4} at[ée] \d{2}\/\d{2}\/\d{4}/i);
+    var nota = texto.match(/nota m[ée]dia nos [^\n]*?\d+(?:[.,]\d+)?\s*\/\s*10/i);
+    var reputacao = null;
+    for (var j = 0; j < linhas.length - 1; j++) {
+      if (norm(linhas[j]) === 'reputacao') { reputacao = linhas[j + 1]; break; }
+    }
+    if (!indicadores['Reclamações recebidas'] || !periodo) {
+      mensagem = 'Não encontrei o painel de indicadores nesta página. Confira se a aba "6 meses" está aberta e se a página terminou de carregar.';
+    } else {
+      dados[slug] = {
+        slug: slug, url: location.origin + location.pathname,
+        capturado_em: new Date().toISOString(), periodo: periodo[0],
+        reputacao: reputacao, nota: nota ? nota[0] : null, indicadores: indicadores
+      };
+      mensagem = salvar(dados)
+        ? '✔ ' + slug + ' capturada (' + Object.keys(indicadores).length + ' de ' + ROTULOS.length + ' indicadores).'
+        : 'Não consegui guardar a captura no navegador (armazenamento bloqueado).';
+    }
+  }
+
+  var faltam = SLUGS.filter(function (s) { return !dados[s]; });
+  var painel = document.createElement('div');
+  painel.id = 'monitor-ra-painel';
+  painel.setAttribute('style', 'position:fixed;top:16px;right:16px;z-index:2147483647;width:340px;max-height:80vh;overflow:auto;' +
+    'background:#fff;color:#1d2330;border:1px solid #c9ced8;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.2);' +
+    'padding:14px 16px;font:14px/1.45 system-ui,sans-serif;text-align:left');
+  function el(tag, txt, css) { var e = document.createElement(tag); if (txt) e.textContent = txt; if (css) e.setAttribute('style', css); painel.appendChild(e); return e; }
+  el('div', 'Monitor RA', 'font-weight:700;margin-bottom:6px');
+  el('div', mensagem, 'margin-bottom:8px');
+  el('div', Object.keys(dados).length + ' empresas capturadas; faltam ' + faltam.length + '.', 'margin-bottom:6px');
+  if (faltam.length) {
+    var lista = el('div', '', 'margin-bottom:10px;columns:2;font-size:13px');
+    faltam.forEach(function (s) {
+      var a = document.createElement('a');
+      a.href = 'https://www.reclameaqui.com.br/empresa/' + s + '/';
+      a.textContent = s; a.setAttribute('style', 'display:block;color:#2f6fdb');
+      lista.appendChild(a);
+    });
+  }
+  function botao(txt, acao) {
+    var b = el('button', txt, 'margin:4px 6px 0 0;padding:6px 10px;border-radius:6px;border:1px solid #c9ced8;background:#f2f4f7;cursor:pointer;font:inherit');
+    b.onclick = acao;
+  }
+  botao('Baixar arquivo', function () {
+    var conteudo = JSON.stringify({ fonte: 'reclame_aqui_botao', versao: 1, capturas: Object.values(ler()) }, null, 2);
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([conteudo], { type: 'application/json' }));
+    a.download = 'reclame_aqui_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+  botao('Limpar', function () {
+    if (confirm('Apagar as capturas guardadas neste navegador?')) { localStorage.removeItem(CHAVE); painel.remove(); }
+  });
+  botao('Fechar', function () { painel.remove(); });
+  document.body.appendChild(painel);
+}
+
+var SLUGS = __SLUGS__;
+document.getElementById('botao').href =
+  'javascript:' + encodeURIComponent('(' + monitorRA.toString() + ')(' + JSON.stringify(SLUGS) + ');void 0');
+document.getElementById('botao').addEventListener('click', function (e) {
+  e.preventDefault();
+  alert('Arraste este botão para a barra de favoritos; ele funciona nas páginas do Reclame Aqui.');
+});
+</script>
+</body>
+</html>
